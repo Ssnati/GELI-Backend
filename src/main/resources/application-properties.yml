@@ -5,3 +5,7 @@ spring:
   application:
     name: GELI-Backend
 
+logging:
+  level:
+    org:
+      keycloak: DEBUG
