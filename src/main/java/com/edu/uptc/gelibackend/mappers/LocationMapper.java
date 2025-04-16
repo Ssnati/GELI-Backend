@@ -8,24 +8,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class LocationMapper {
 
-    @Autowired
-    private LocationTypeMapper locationTypeMapper;
+    private final LocationTypeMapper locationTypeMapper;
 
-    public LocationDTO toLocationDTO(LocationEntity locationEntity) {
+    public LocationMapper(LocationTypeMapper locationTypeMapper) {
+        this.locationTypeMapper = locationTypeMapper;
+    }
+
+    public LocationDTO mapEntityToDTO(LocationEntity locationEntity) {
         return new LocationDTO(
                 locationEntity.getId(),
                 locationEntity.getLocationName(),
-                locationTypeMapper.toLocationTypeDTO(locationEntity.getLocationType()),
-                locationEntity.getParentLocation() != null ? toLocationDTO(locationEntity.getParentLocation()) : null
+                locationTypeMapper.mapEntityToDTO(locationEntity.getLocationType()),
+                locationEntity.getParentLocation() != null ? mapEntityToDTO(locationEntity.getParentLocation()) : null
         );
     }
 
-    public LocationEntity toLocationEntity(LocationDTO locationDTO) {
+    public LocationEntity mapDTOToEntity(LocationDTO locationDTO) {
         return new LocationEntity(
                 locationDTO.getId(),
                 locationDTO.getLocationName(),
-                locationTypeMapper.toLocationTypeEntity(locationDTO.getLocationType()),
-                locationDTO.getParentLocation() != null ? toLocationEntity(locationDTO.getParentLocation()) : null
+                locationTypeMapper.mapDTOToEntity(locationDTO.getLocationType()),
+                locationDTO.getParentLocation() != null ? mapDTOToEntity(locationDTO.getParentLocation()) : null
         );
     }
 }

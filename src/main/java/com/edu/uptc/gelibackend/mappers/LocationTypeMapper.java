@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class LocationTypeMapper {
 
-    public LocationTypeDTO toLocationTypeDTO(LocationTypeEntity locationTypeEntity) {
+    public LocationTypeDTO mapEntityToDTO(LocationTypeEntity locationTypeEntity) {
         return new LocationTypeDTO(
                 locationTypeEntity.getId(),
                 locationTypeEntity.getName()
         );
     }
 
-    public LocationTypeEntity toLocationTypeEntity(LocationTypeDTO locationTypeDTO) {
+    public LocationTypeEntity mapDTOToEntity(LocationTypeDTO locationTypeDTO) {
         return new LocationTypeEntity(
                 locationTypeDTO.getId(),
                 locationTypeDTO.getLocationTypeName()

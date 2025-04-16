@@ -24,13 +24,13 @@ public class LaboratoryService {
 
     public List<LaboratoryDTO> findAll() {
         return labRepo.findAll().stream()
-                .map(mapper::mapLaboratoryToLaboratoryDTO)
+                .map(mapper::mapEntityToDTO)
                 .collect(Collectors.toList());
     }
 
     public Optional<LaboratoryDTO> findById(Long id) {
         return labRepo.findById(id)
-                .map(mapper::mapLaboratoryToLaboratoryDTO);
+                .map(mapper::mapEntityToDTO);
     }
 
     public LaboratoryDTO create(LaboratoryDTO dto) {
@@ -39,10 +39,10 @@ public class LaboratoryService {
         LocationEntity location = locRepo.findById(dto.getLocation().getId())
                 .orElseThrow(() -> new NotFoundException("Location not found"));
 
-        LaboratoryEntity entity = mapper.mapLaboratoryDTOToLaboratory(dto);
+        LaboratoryEntity entity = mapper.mapDTOToEntity(dto);
         entity.setLaboratoryLocation(location);
 
-        return mapper.mapLaboratoryToLaboratoryDTO(labRepo.save(entity));
+        return mapper.mapEntityToDTO(labRepo.save(entity));
     }
 
     private void validateUniqueName(String laboratoryName) {
@@ -64,7 +64,7 @@ public class LaboratoryService {
         existing.setLaboratoryAvailability(dto.getLaboratoryAvailability());
         existing.setLaboratoryLocation(location);
 
-        return mapper.mapLaboratoryToLaboratoryDTO(labRepo.save(existing));
+        return mapper.mapEntityToDTO(labRepo.save(existing));
     }
 
     public boolean delete(Long id) {
