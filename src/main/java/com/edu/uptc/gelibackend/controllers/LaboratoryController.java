@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
+import com.edu.uptc.gelibackend.dtos.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.services.LaboratoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +45,14 @@ public class LaboratoryController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.delete(id)) return ResponseEntity.noContent().build();
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<LaboratoryDTO>> filterLaboratories(@RequestBody LaboratoryFilterDTO filters) {
+        List<LaboratoryDTO> result = service.filterLaboratories(filters);
+        if (result.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
     }
 }

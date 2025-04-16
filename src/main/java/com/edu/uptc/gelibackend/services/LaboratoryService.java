@@ -1,12 +1,15 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
+import com.edu.uptc.gelibackend.dtos.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.entities.LaboratoryEntity;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
 import com.edu.uptc.gelibackend.mappers.LaboratoryMapper;
 import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
+import com.edu.uptc.gelibackend.specifications.LaboratorySpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.NotFoundException;
@@ -21,6 +24,7 @@ public class LaboratoryService {
     private final LaboratoryRepository labRepo;
     private final LocationRepository locRepo;
     private final LaboratoryMapper mapper;
+    private final LaboratorySpecification labEpecification;
 
     public List<LaboratoryDTO> findAll() {
         return labRepo.findAll().stream()
@@ -74,4 +78,12 @@ public class LaboratoryService {
         }
         return false;
     }
+
+    public List<LaboratoryDTO> filterLaboratories(LaboratoryFilterDTO filters) {
+        Specification<LaboratoryEntity> spec = labEpecification.build(filters);
+        return labRepo.findAll(spec).stream()
+                .map(mapper::mapEntityToDTO)
+                .collect(Collectors.toList());
+    }
+
 }
