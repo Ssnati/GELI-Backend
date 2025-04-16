@@ -10,10 +10,10 @@ import org.keycloak.admin.client.resource.UsersResource;
 
 public class KeyCloakProvider {
 
-    private static String SERVER_URL = "http://localhost:9090";
-    private static String REALM = "geli-dev";
-    private static String CLIENT_ID = "geli-backend";
-    private static String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
+    public static String SERVER_URL = "http://localhost:9090";
+    public static String REALM = "geli-dev";
+    public static String CLIENT_ID = "geli-backend";
+    public static String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
 
     public static RealmResource getRealmResource() {
         Keycloak keycloak = KeycloakBuilder.builder()
