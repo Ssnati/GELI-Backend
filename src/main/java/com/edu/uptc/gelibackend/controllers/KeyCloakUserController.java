@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/keycloak")
+@RequestMapping("/api/v1/users")
 public class KeyCloakUserController {
 
     @Autowired
     private KeyCloakUserService keycloakUserService;
 
-    @GetMapping("/users")
+    @GetMapping
     public List<UserRepresentation> getUsers() {
         return keycloakUserService.getAllUsers();
     }
