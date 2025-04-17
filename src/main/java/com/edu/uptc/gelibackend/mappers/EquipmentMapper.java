@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class EquipmentMapper {
 
-    private final FunctionMapper functionMapper;
     private final LaboratoryMapper laboratoryMapper;
 
-    public EquipmentMapper(FunctionMapper functionMapper, LaboratoryMapper laboratoryMapper) {
-        this.functionMapper = functionMapper;
+    public EquipmentMapper(LaboratoryMapper laboratoryMapper) {
         this.laboratoryMapper = laboratoryMapper;
     }
 
