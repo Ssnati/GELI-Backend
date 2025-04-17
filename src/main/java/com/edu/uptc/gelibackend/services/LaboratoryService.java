@@ -24,7 +24,7 @@ public class LaboratoryService {
     private final LaboratoryRepository labRepo;
     private final LocationRepository locRepo;
     private final LaboratoryMapper mapper;
-    private final LaboratorySpecification labEpecification;
+    private final LaboratorySpecification labSpecification;
 
     public List<LaboratoryDTO> findAll() {
         return labRepo.findAll().stream()
@@ -80,7 +80,7 @@ public class LaboratoryService {
     }
 
     public List<LaboratoryDTO> filterLaboratories(LaboratoryFilterDTO filters) {
-        Specification<LaboratoryEntity> spec = labEpecification.build(filters);
+        Specification<LaboratoryEntity> spec = labSpecification.build(filters);
         return labRepo.findAll(spec).stream()
                 .map(mapper::mapEntityToDTO)
                 .collect(Collectors.toList());

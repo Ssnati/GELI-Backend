@@ -48,13 +48,13 @@ public class LaboratoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('LABORATORY_WRITE')")
+    @PreAuthorize("hasAuthority('LABORATORY_DELETE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.delete(id)) return ResponseEntity.noContent().build();
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     @PreAuthorize("hasAuthority('LABORATORY_READ')")
     public ResponseEntity<List<LaboratoryDTO>> filterLaboratories(@RequestBody LaboratoryFilterDTO filters) {
         List<LaboratoryDTO> result = service.filterLaboratories(filters);

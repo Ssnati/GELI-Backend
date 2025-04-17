@@ -2,7 +2,6 @@ package com.edu.uptc.gelibackend.mappers;
 
 import com.edu.uptc.gelibackend.dtos.LocationDTO;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
