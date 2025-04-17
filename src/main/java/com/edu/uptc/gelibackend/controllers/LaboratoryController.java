@@ -1,7 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
-import com.edu.uptc.gelibackend.dtos.LaboratoryFilterDTO;
+import com.edu.uptc.gelibackend.specifications.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.services.LaboratoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

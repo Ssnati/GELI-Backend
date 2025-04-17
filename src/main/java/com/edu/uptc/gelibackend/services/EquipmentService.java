@@ -1,16 +1,21 @@
 package com.edu.uptc.gelibackend.services;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
 import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
 import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
 import com.edu.uptc.gelibackend.repositories.EquipmentRepository;
 import com.edu.uptc.gelibackend.repositories.FunctionRepository;
 import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.edu.uptc.gelibackend.specifications.EquipmentFilterDTO;
+import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +25,7 @@ public class EquipmentService {
     private FunctionRepository functionRepo;
     private final EquipmentMapper mapper;
     private final LaboratoryRepository laboratoryRepo;
-//    private final EquipmentSpecification equipmentSpecification;
+    private final EquipmentSpecification equipmentSpecification;
 
     public List<EquipmentDTO> findAll() {
         return equipmentRepo.findAll().stream()
@@ -58,7 +63,8 @@ public class EquipmentService {
         exist.setInventoryNumber(dto.getInventoryNumber());
         exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratory().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));
-        return dto;
+        EquipmentEntity updatedEntity = equipmentRepo.save(exist);
+        return mapper.mapEntityToDTO(updatedEntity);
     }
 
     private void validateInventoryNumber(String inventoryNumber) {
@@ -76,5 +82,10 @@ public class EquipmentService {
         return false;
     }
 
-
+    public List<EquipmentDTO> filter(EquipmentFilterDTO filter) {
+        Specification<EquipmentEntity> spec = equipmentSpecification.build(filter);
+        return equipmentRepo.findAll(spec).stream()
+                .map(mapper::mapEntityToDTO)
+                .collect(Collectors.toList());
+    }
 }

@@ -1,6 +1,6 @@
 package com.edu.uptc.gelibackend.specifications;
 
-import com.edu.uptc.gelibackend.filers.BaseFilterDTO;
+import com.edu.uptc.gelibackend.filters.BaseFilterDTO;
 import org.springframework.data.jpa.domain.Specification;
 
 public abstract class BaseSpecification<T, F extends BaseFilterDTO> {

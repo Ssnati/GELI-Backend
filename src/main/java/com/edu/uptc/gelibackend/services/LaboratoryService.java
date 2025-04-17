@@ -1,7 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
-import com.edu.uptc.gelibackend.dtos.LaboratoryFilterDTO;
+import com.edu.uptc.gelibackend.specifications.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.entities.LaboratoryEntity;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
 import com.edu.uptc.gelibackend.mappers.LaboratoryMapper;

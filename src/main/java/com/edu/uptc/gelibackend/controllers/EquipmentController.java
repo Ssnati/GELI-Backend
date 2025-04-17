@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
+import com.edu.uptc.gelibackend.specifications.EquipmentFilterDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,5 +53,15 @@ public class EquipmentController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/filter")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<List<EquipmentDTO>> filter(@RequestBody EquipmentFilterDTO filter) {
+        List<EquipmentDTO> filteredList = service.filter(filter);
+        if (filteredList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(filteredList);
     }
 }
