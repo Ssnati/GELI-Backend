@@ -21,4 +21,9 @@ public class FunctionEntity {
     @Column(name = "function_name", nullable = false)
     private String functionName;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "equipment_id", nullable = false)
+    private EquipmentEntity equipment;
+
 }

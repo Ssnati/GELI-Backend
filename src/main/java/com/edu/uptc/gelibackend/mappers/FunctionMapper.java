@@ -7,15 +7,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class FunctionMapper {
 
+    private final EquipmentMapper equipmentMapper;
+
+    public FunctionMapper(EquipmentMapper equipmentMapper) {
+        this.equipmentMapper = equipmentMapper;
+    }
+
     public FunctionEntity mapDTOToEntity(FunctionDTO functionDTO) {
         return new FunctionEntity(
                 functionDTO.getId(),
-                functionDTO.getFunctionName());
+                functionDTO.getFunctionName(),
+                equipmentMapper.mapDTOToEntity(functionDTO.getEquipment())
+        );
     }
 
     public FunctionDTO mapEntityToDTO(FunctionEntity functionEntity) {
         return new FunctionDTO(
                 functionEntity.getId(),
-                functionEntity.getFunctionName());
+                functionEntity.getFunctionName(),
+                equipmentMapper.mapEntityToDTO(functionEntity.getEquipment())
+        );
     }
 }

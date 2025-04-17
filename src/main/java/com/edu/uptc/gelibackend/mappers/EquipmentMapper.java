@@ -22,8 +22,7 @@ public class EquipmentMapper {
                 equipmentDTO.getBrand(),
                 equipmentDTO.getInventoryNumber(),
                 laboratoryMapper.mapDTOToEntity(equipmentDTO.getLaboratory()),
-                equipmentDTO.getAvailability(),
-                functionMapper.mapDTOToEntity(equipmentDTO.getFunction())
+                equipmentDTO.getAvailability()
         );
     }
 
@@ -34,8 +33,7 @@ public class EquipmentMapper {
                 equipmentEntity.getBrand(),
                 equipmentEntity.getInventoryNumber(),
                 laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()),
-                equipmentEntity.getAvailability(),
-                functionMapper.mapEntityToDTO(equipmentEntity.getFunction())
+                equipmentEntity.getAvailability()
         );
     }
 }

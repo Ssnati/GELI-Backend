@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -36,9 +38,4 @@ public class EquipmentEntity {
     @NotNull
     @Column(name = "equipment_availability", nullable = false)
     private Boolean availability;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "function_id", nullable = false)
-    private FunctionEntity function;
 }

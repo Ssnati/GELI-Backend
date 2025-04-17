@@ -14,5 +14,4 @@ public class EquipmentDTO {
     private String inventoryNumber;
     private LaboratoryDTO laboratory;
     private Boolean availability;
-    private FunctionDTO function;
 }
