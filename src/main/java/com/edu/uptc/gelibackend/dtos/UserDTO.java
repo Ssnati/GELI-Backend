@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +18,6 @@ public class UserDTO {
     private String identification;
     private Boolean enabledStatus;
     private String role;
-    private String modificationRoleDate;
-    private String creationDate;
+    private LocalDate modificationRoleDate;
+    private LocalDate creationDate;
 }

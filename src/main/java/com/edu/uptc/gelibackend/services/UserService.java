@@ -2,15 +2,12 @@ package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.UserDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
+import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,36 +19,36 @@ public class UserService {
 
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
+    private final UserMapper mapper;
 
     public List<UserDTO> findAll() {
-        List<UserDTO> users = new ArrayList<>();
-        Map<Long, UserEntity> entityList = userRepo.findAll().stream()
-                .collect(Collectors.toMap(UserEntity::getId, userEntity -> userEntity));
-        Map<String, UserRepresentation> keycloakUserMap = keyCloakUserService.getAllUsers().stream()
+        // Obtener todos los usuarios de Keycloak y mapearlos por su ID
+        List<UserRepresentation> keycloakUsers;
+        try {
+            keycloakUsers = keyCloakUserService.getAllUsers();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching users from Keycloak", e);
+        }
+
+        Map<String, UserRepresentation> keycloakUserMap = keycloakUsers.stream()
                 .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
 
-        for (UserEntity userEntity : entityList.values()) {
-            UserRepresentation keycloakUser = keycloakUserMap.get(userEntity.getKeycloakId());
-            if (keycloakUser != null) {
-                UserDTO userDTO = new UserDTO();
-                userDTO.setId(userEntity.getId());
-                userDTO.setKeycloakId(userEntity.getKeycloakId());
-                userDTO.setFirstName(keycloakUser.getFirstName());
-                userDTO.setLastName(keycloakUser.getLastName());
-                userDTO.setEmail(keycloakUser.getEmail());
-                userDTO.setIdentification(userEntity.getIdentification());
-                userDTO.setEnabledStatus(keycloakUser.isEnabled());
-                List<String> roles = keycloakUser.getRealmRoles().stream()
-                        .filter(role -> role.equals(role.toUpperCase()))
-                        .toList();
-                userDTO.setRole(roles.toString());
-                userDTO.setModificationRoleDate(userEntity.getModificationRoleDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                userDTO.setCreationDate(DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                        .format(Instant.ofEpochMilli(keycloakUser.getCreatedTimestamp()).atZone(ZoneId.systemDefault())));
-                users.add(userDTO);
-            }
+        // Mapear usuarios locales a DTOs y combinar datos con Keycloak
+        return userRepo.findAll().stream()
+                .map(userEntity -> mergeUserEntityWithKeycloakData(userEntity, keycloakUserMap))
+                .collect(Collectors.toList());
+    }
+
+    private UserDTO mergeUserEntityWithKeycloakData(UserEntity userEntity, Map<String, UserRepresentation> keycloakUserMap) {
+        // Crear el DTO a partir de la entidad local
+        UserDTO dto = mapper.completeDTOWithEntity(new UserDTO(), userEntity);
+
+        // Completar el DTO con datos de Keycloak si existe
+        UserRepresentation keycloakUser = keycloakUserMap.get(userEntity.getKeycloakId());
+        if (keycloakUser != null) {
+            dto = mapper.completeDTOWithRepresentation(dto, keycloakUser);
         }
-        return users;
+        return dto;
     }
 
     public Optional<UserDTO> findById(Long id) {
