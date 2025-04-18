@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,7 @@ public class UserService {
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
+    private Map<String, UserRepresentation> inMemmoryUsersMap = new HashMap<>();
 
     public List<UserDTO> findAll() {
         // Obtener todos los usuarios de Keycloak y mapearlos por su ID
@@ -32,7 +34,7 @@ public class UserService {
 
         Map<String, UserRepresentation> keycloakUserMap = keycloakUsers.stream()
                 .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
-
+        inMemmoryUsersMap = keycloakUserMap;
         // Mapear usuarios locales a DTOs y combinar datos con Keycloak
         return userRepo.findAll().stream()
                 .map(userEntity -> mergeUserEntityWithKeycloakData(userEntity, keycloakUserMap))
@@ -52,14 +54,38 @@ public class UserService {
     }
 
     public Optional<UserDTO> findById(Long id) {
-        return userRepo.findById(id)
-                .map(userEntity -> {
-                    UserDTO dto = new UserDTO();
-                    dto.setId(userEntity.getId());
-                    dto.setKeycloakId(userEntity.getKeycloakId());
-                    dto.setIdentification(userEntity.getIdentification());
-                    return dto;
-                });
+        Optional<UserEntity> userEntityOptional = userRepo.findById(id);
+        if (userEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UserRepresentation keycloakUser = inMemmoryUsersMap.getOrDefault(
+                userEntityOptional.get().getKeycloakId(),
+                updateInMemmoryUsersMap().get(userEntityOptional.get().getKeycloakId()));
+        if (keycloakUser == null) {
+            return Optional.empty();
+        }
+
+        UserDTO userDTO = mapper.completeDTOWithEntity(
+                mapper.completeDTOWithRepresentation(
+                        new UserDTO(),
+                        keycloakUser
+                ),
+                userEntityOptional.get()
+        );
+        return Optional.of(userDTO);
+    }
+
+    private Map<String, UserRepresentation> updateInMemmoryUsersMap() {
+        List<UserRepresentation> keycloakUsers;
+        try {
+            keycloakUsers = keyCloakUserService.getAllUsers();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching users from Keycloak", e);
+        }
+        inMemmoryUsersMap = keycloakUsers.stream()
+                .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
+        return inMemmoryUsersMap;
     }
 
     public UserDTO createUser(UserDTO user) {
