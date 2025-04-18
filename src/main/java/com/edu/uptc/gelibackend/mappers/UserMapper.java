@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.mappers;
 
-import com.edu.uptc.gelibackend.dtos.UserDTO;
+import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
+import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import java.util.List;
 @Component
 public class UserMapper {
 
-    public UserEntity mapDTOToEntity(UserDTO dto) {
+    public UserEntity mapResponseDTOToEntity(UserResponseDTO dto) {
         return new UserEntity(
                 dto.getId(),
                 dto.getKeycloakId(),
@@ -21,7 +22,7 @@ public class UserMapper {
         );
     }
 
-    public UserRepresentation mapDTOToRepresentation(UserDTO dto) {
+    public UserRepresentation mapResponseDTOToRepresentation(UserResponseDTO dto) {
         UserRepresentation userRepresentation = new UserRepresentation();
         userRepresentation.setId(dto.getKeycloakId());
         userRepresentation.setFirstName(dto.getFirstName());
@@ -34,7 +35,7 @@ public class UserMapper {
         return userRepresentation;
     }
 
-    public UserDTO completeDTOWithEntity(UserDTO dto, UserEntity entity) {
+    public UserResponseDTO completeDTOWithEntity(UserResponseDTO dto, UserEntity entity) {
         dto.setId(entity.getId());
         dto.setKeycloakId(entity.getKeycloakId());
         dto.setIdentification(entity.getIdentification());
@@ -42,7 +43,7 @@ public class UserMapper {
         return dto;
     }
 
-    public UserDTO completeDTOWithRepresentation(UserDTO dto, UserRepresentation representation) {
+    public UserResponseDTO completeDTOWithRepresentation(UserResponseDTO dto, UserRepresentation representation) {
         dto.setFirstName(representation.getFirstName());
         dto.setLastName(representation.getLastName());
         dto.setEmail(representation.getEmail());
@@ -51,5 +52,40 @@ public class UserMapper {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate());
         return dto;
+    }
+
+    public UserEntity mapCreationDTOToEntity(UserCreationDTO dto) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setIdentification(dto.getIdentification());
+        return userEntity;
+    }
+
+    public UserRepresentation mapCreationDTOToRepresentation(UserCreationDTO dto) {
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setFirstName(dto.getFirstName());
+        userRepresentation.setLastName(dto.getLastName());
+        userRepresentation.setEmail(dto.getEmail());
+        userRepresentation.setUsername(dto.getEmail().split("@")[0]);
+        userRepresentation.setEnabled(true);
+        if (dto.getRole().equals("QUALITY-ADMIN-USER") || dto.getRole().equals("AUTHORIZED-USER")) {
+            userRepresentation.setRealmRoles(List.of(dto.getRole()));
+        } else {
+            throw new RuntimeException("Invalid role");
+        }
+        return userRepresentation;
+    }
+
+    public UserResponseDTO mapCreationDTOToResponseDTO(UserCreationDTO dto) {
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setFirstName(dto.getFirstName());
+        userResponseDTO.setLastName(dto.getLastName());
+        userResponseDTO.setEmail(dto.getEmail());
+        userResponseDTO.setIdentification(dto.getIdentification());
+        if (dto.getRole().equals("QUALITY-ADMIN-USER") || dto.getRole().equals("AUTHORIZED-USER")) {
+            userResponseDTO.setRole(dto.getRole());
+        } else {
+            throw new RuntimeException("Invalid role");
+        }
+        return userResponseDTO;
     }
 }

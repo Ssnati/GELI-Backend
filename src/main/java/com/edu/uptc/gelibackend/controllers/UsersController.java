@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import com.edu.uptc.gelibackend.dtos.UserDTO;
+import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
+import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +20,14 @@ public class UsersController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER_READ')")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.findAll();
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        List<UserResponseDTO> users = userService.findAll();
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_READ')")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
         return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -34,15 +35,15 @@ public class UsersController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO user) {
-        UserDTO createdUser = userService.createUser(user);
+    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserCreationDTO user) {
+        UserResponseDTO createdUser = userService.createUser(user);
         return ResponseEntity.status(201).body(createdUser);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO user) {
-        UserDTO updatedUser = userService.updateUser(id, user);
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserResponseDTO user) {
+        UserResponseDTO updatedUser = userService.updateUser(id, user);
         return ResponseEntity.ok(updatedUser);
     }
 
