@@ -2,17 +2,17 @@ package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
+import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.core.Response;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,12 +118,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Invalid response location from Keycloak"));
     }
 
-    public LocalDate convertLongToLocalDate(long timestamp) {
-        return Instant.ofEpochMilli(timestamp)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-    }
-
     private UserResponseDTO saveUserInDatabase(UserResponseDTO userResponseDTO) {
         try {
             UserEntity userEntity = mapper.mapResponseDTOToEntity(userResponseDTO);
@@ -153,7 +147,87 @@ public class UserService {
 
     }
 
-    public UserResponseDTO updateUser(Long id, UserResponseDTO updatedUser) {
-        return updatedUser;
+    @Transactional
+    public UserResponseDTO updateUser(String username, UserUpdateDTO updateDTO) {
+        validateEmptyFields(updateDTO);
+
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        // Obtener usuario de Keycloak
+        UserRepresentation keycloakUser = keyCloakUserService.getAllUsers()
+                .stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found by username: " + username));
+
+        // Obtener usuario existente
+        UserEntity existingEntity = userRepo.findAll().stream()
+                .filter(user -> user.getKeycloakId().equals(keycloakUser.getId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found in database"));
+
+        userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keycloakUser);
+        userResponseDTO = mapper.completeDTOWithEntity(userResponseDTO, existingEntity);
+
+        // Validar identificación
+        validateIdentificationUpdate(updateDTO, existingEntity);
+
+        // Manejar cambio de estado
+        handleChangeStatus(updateDTO, keycloakUser, existingEntity);
+
+        // buscar en los roles del realm, si el rol nuevo no se encuentra,lanzar una excepción
+        keyCloakUserService.getAllRoles()
+                .stream()
+                .filter(role -> role.getName().equals(updateDTO.getRole()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Role not found in Keycloak"));
+
+
+        try {
+//             Actualizar base de datos primero
+            UserEntity updatedEntity = userRepo.save(existingEntity);
+
+            // Actualizar Keycloak (roles y datos básicos)
+            List<String> newRoles = Collections.singletonList(updateDTO.getRole());
+            keyCloakUserService.updateUser(keycloakUser, newRoles);
+
+            userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keycloakUser);
+            return mapper.completeDTOWithEntity(userResponseDTO, updatedEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
+        }
+
+    }
+
+    private void handleChangeStatus(UserUpdateDTO updateDTO, UserRepresentation keycloakUser, UserEntity existingEntity) {
+        if (updateDTO.getEnabledStatus().equals(keycloakUser.isEnabled())) {
+            return;
+        }
+        keycloakUser.setEnabled(updateDTO.getEnabledStatus());
+        existingEntity.setModificationStatusDate(LocalDate.now());
+    }
+
+    private void validateIdentificationUpdate(UserUpdateDTO updateDTO, UserEntity existingEntity) {
+        if (updateDTO.getIdentification().equals(existingEntity.getIdentification())) {
+            return;
+        }
+        UserCreationDTO userCreationDTO = new UserCreationDTO();
+        userCreationDTO.setIdentification(updateDTO.getIdentification());
+        validateUniqueIdentificationNumber(userCreationDTO);
+        existingEntity.setIdentification(updateDTO.getIdentification());
+    }
+
+    private void validateEmptyFields(UserUpdateDTO updateDTO) {
+        if (updateDTO.getFirstName() == null || updateDTO.getFirstName().isEmpty()) {
+            throw new RuntimeException("The field firstName cannot be empty");
+        }
+        if (updateDTO.getLastName() == null || updateDTO.getLastName().isEmpty()) {
+            throw new RuntimeException("The field lastName cannot be empty");
+        }
+        if (updateDTO.getIdentification() == null || updateDTO.getIdentification().isEmpty()) {
+            throw new RuntimeException("The field identification cannot be empty");
+        }
+        if (updateDTO.getEnabledStatus() == null) {
+            throw new RuntimeException("The field enabledStatus cannot be empty");
+        }
     }
 }

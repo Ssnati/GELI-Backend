@@ -86,4 +86,45 @@ public class KeyCloakUserService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar el usuario: " + e.getMessage(), e);
         }
     }
+
+    public void updateUser(UserRepresentation keycloakUser, List<String> newRoles) {
+        String userId = keycloakUser.getId();
+        UserResource userResource = keyCloakProvider.realm(REALM).users().get(userId);
+
+        // 1. Actualizar atributos básicos del usuario
+        userResource.update(keycloakUser);
+
+        // 2. Manejar actualización de roles
+        List<RoleRepresentation> currentRoles = userResource.roles().realmLevel().listAll();
+
+        // 3. Eliminar todos los roles actuales
+        if (!currentRoles.isEmpty()) {
+            userResource.roles().realmLevel().remove(currentRoles);
+        }
+
+        // 4. Validar y convertir nuevos roles a representación
+        List<RoleRepresentation> rolesToAdd = newRoles.stream()
+                .map(roleName -> {
+                    RoleRepresentation role = keyCloakProvider.realm(REALM)
+                            .roles()
+                            .get(roleName)
+                            .toRepresentation();
+
+                    if (role == null) {
+                        throw new RuntimeException("Rol no encontrado: " + roleName);
+                    }
+                    return role;
+                })
+                .toList();
+
+
+        // 5. Agregar nuevos roles
+        if (!rolesToAdd.isEmpty()) {
+            userResource.roles().realmLevel().add(rolesToAdd);
+        }
+    }
+
+    public List<RoleRepresentation> getAllRoles() {
+        return keyCloakProvider.realm(REALM).roles().list();
+    }
 }

@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
+import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +41,10 @@ public class UsersController {
         return ResponseEntity.status(201).body(createdUser);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{username}")
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserResponseDTO user) {
-        UserResponseDTO updatedUser = userService.updateUser(id, user);
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String username, @RequestBody UserUpdateDTO user) {
+        UserResponseDTO updatedUser = userService.updateUser(username, user);
         return ResponseEntity.ok(updatedUser);
     }
 
