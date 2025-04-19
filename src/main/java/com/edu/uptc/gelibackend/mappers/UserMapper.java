@@ -30,7 +30,7 @@ public class UserMapper {
         userRepresentation.setEmail(dto.getEmail());
         userRepresentation.setUsername(dto.getEmail().split("@")[0]);
         userRepresentation.setEnabled(dto.getEnabledStatus());
-        userRepresentation.setRealmRoles(List.of(dto.getRole()));
+        userRepresentation.setRealmRoles(dto.getRoles());
         userRepresentation.setCreatedTimestamp(dto.getCreationDate().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         return userRepresentation;
     }
@@ -51,6 +51,7 @@ public class UserMapper {
         dto.setCreationDate(Instant.ofEpochMilli(representation.getCreatedTimestamp())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate());
+        dto.setRoles(representation.getRealmRoles());
         return dto;
     }
 
@@ -82,7 +83,7 @@ public class UserMapper {
         userResponseDTO.setEmail(dto.getEmail());
         userResponseDTO.setIdentification(dto.getIdentification());
         if (dto.getRole().equals("QUALITY-ADMIN-USER") || dto.getRole().equals("AUTHORIZED-USER")) {
-            userResponseDTO.setRole(dto.getRole());
+            userResponseDTO.setRoles(List.of(dto.getRole()));
         } else {
             throw new RuntimeException("Invalid role");
         }

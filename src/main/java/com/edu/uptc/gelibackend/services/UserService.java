@@ -13,10 +13,7 @@ import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,13 +26,22 @@ public class UserService {
     private Map<String, UserRepresentation> inMemmoryUsersMap = new HashMap<>();
 
     public List<UserResponseDTO> findAll() {
-        // Asegurarse de que el mapa en memoria esté actualizado
-        updateInMemoryUsersMapIfNeeded();
+        List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
+        Map<String, UserRepresentation> usersMap = new HashMap<>();
+        List<UserEntity> userEntities = userRepo.findAll();
 
-        // Mapear usuarios locales a DTOs y combinar datos con Keycloak
-        return userRepo.findAll().stream()
-                .map(userEntity -> mergeEntityWithRepresentation(userEntity, inMemmoryUsersMap))
-                .collect(Collectors.toList());
+        for (UserRepresentation representation : keyCloakUserService.getAllUsers()) {
+            usersMap.put(representation.getId(), representation);
+        }
+
+        for (UserEntity userEntity : userEntities) {
+            UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
+            if (userRepresentation != null) {
+                UserResponseDTO userResponseDTO = mapper.completeDTOWithRepresentation(new UserResponseDTO(), userRepresentation);
+                userResponseDTOList.add(mapper.completeDTOWithEntity(userResponseDTO, userEntity));
+            }
+        }
+        return userResponseDTOList;
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
@@ -95,6 +101,9 @@ public class UserService {
         // Crear el usuario en Keycloak
         Response response = createUserInKeycloak(userCreationDTO);
         String userId = extractUserIdFromResponse(response);
+
+        // Assign role to user
+        keyCloakUserService.assignRealmRoleToUser(userId, userCreationDTO.getRole());
 
         // Crear un mapa temporal de todos los usuarios de Keycloak
         Map<String, UserRepresentation> temporaryUsersMap = fetchAllKeycloakUsers();
