@@ -156,13 +156,4 @@ public class UserService {
     public UserResponseDTO updateUser(Long id, UserResponseDTO updatedUser) {
         return updatedUser;
     }
-
-    public boolean deleteUser(Long id) {
-        return userRepo.findById(id)
-                .map(user -> {
-                    userRepo.delete(user);
-                    return true;
-                })
-                .orElse(false);
-    }
 }
