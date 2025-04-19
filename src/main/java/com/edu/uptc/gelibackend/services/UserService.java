@@ -173,8 +173,11 @@ public class UserService {
 
         // Manejar cambio de estado
         handleChangeStatus(updateDTO, keycloakUser, existingEntity);
+        keycloakUser.setFirstName(updateDTO.getFirstName());
+        keycloakUser.setLastName(updateDTO.getLastName());
 
-        // buscar en los roles del realm, si el rol nuevo no se encuentra,lanzar una excepción
+
+        // buscar en los roles del realm, si el rol nuevo no se encuentra, lanzar una excepción
         keyCloakUserService.getAllRoles()
                 .stream()
                 .filter(role -> role.getName().equals(updateDTO.getRole()))
@@ -189,8 +192,9 @@ public class UserService {
             // Actualizar Keycloak (roles y datos básicos)
             List<String> newRoles = Collections.singletonList(updateDTO.getRole());
             keyCloakUserService.updateUser(keycloakUser, newRoles);
+            keyCloakUserService.assignRealmRoleToUser(keycloakUser.getId(), updateDTO.getRole());
 
-            userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keycloakUser);
+            userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keyCloakUserService.getById(keycloakUser.getId()));
             return mapper.completeDTOWithEntity(userResponseDTO, updatedEntity);
         } catch (Exception e) {
             throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);

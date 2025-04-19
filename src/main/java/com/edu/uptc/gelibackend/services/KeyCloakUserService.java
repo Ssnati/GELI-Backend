@@ -1,7 +1,9 @@
 package com.edu.uptc.gelibackend.services;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,39 +91,28 @@ public class KeyCloakUserService {
 
     public void updateUser(UserRepresentation keycloakUser, List<String> newRoles) {
         String userId = keycloakUser.getId();
-        UserResource userResource = keyCloakProvider.realm(REALM).users().get(userId);
+        UsersResource usersResource = keyCloakProvider.realm(REALM).users();
 
         // 1. Actualizar atributos básicos del usuario
-        userResource.update(keycloakUser);
+        usersResource.get(userId).update(keycloakUser);
 
-        // 2. Manejar actualización de roles
-        List<RoleRepresentation> currentRoles = userResource.roles().realmLevel().listAll();
+        RealmResource realmResource = keyCloakProvider.realm(REALM);
 
-        // 3. Eliminar todos los roles actuales
-        if (!currentRoles.isEmpty()) {
-            userResource.roles().realmLevel().remove(currentRoles);
-        }
+        // Obtener roles por defecto del realm
+        List<RoleRepresentation> defaultRoles = List.of(realmResource.roles().get("default-roles-".concat(REALM)).toRepresentation());
 
-        // 4. Validar y convertir nuevos roles a representación
-        List<RoleRepresentation> rolesToAdd = newRoles.stream()
-                .map(roleName -> {
-                    RoleRepresentation role = keyCloakProvider.realm(REALM)
-                            .roles()
-                            .get(roleName)
-                            .toRepresentation();
+        // Combinar roles por defecto con los nuevos roles
+        List<RoleRepresentation> roles = new java.util.ArrayList<>(realmResource.roles()
+                .list()
+                .stream()
+                .filter(role -> newRoles.stream()
+                        .anyMatch(roleName -> roleName.equalsIgnoreCase(role.getName())))
+                .toList());
+        roles.addAll(defaultRoles);
 
-                    if (role == null) {
-                        throw new RuntimeException("Rol no encontrado: " + roleName);
-                    }
-                    return role;
-                })
-                .toList();
-
-
-        // 5. Agregar nuevos roles
-        if (!rolesToAdd.isEmpty()) {
-            userResource.roles().realmLevel().add(rolesToAdd);
-        }
+        // Actualizar roles del usuario
+        usersResource.get(userId).roles().realmLevel().remove(usersResource.get(userId).roles().realmLevel().listAll());
+        usersResource.get(userId).roles().realmLevel().add(roles);
     }
 
     public List<RoleRepresentation> getAllRoles() {
