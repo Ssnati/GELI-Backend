@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.services.UserService;
+import com.edu.uptc.gelibackend.specifications.UserFilterDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,6 +47,13 @@ public class UsersController {
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String username, @RequestBody UserUpdateDTO user) {
         UserResponseDTO updatedUser = userService.updateUser(username, user);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/filter")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<List<UserResponseDTO>> filterUsers(@RequestBody UserFilterDTO user) {
+        List<UserResponseDTO> filteredUsers = userService.filter(user);
+        return filteredUsers.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(filteredUsers);
     }
 
 }

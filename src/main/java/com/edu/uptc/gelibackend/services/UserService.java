@@ -6,8 +6,11 @@ import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
+import com.edu.uptc.gelibackend.specifications.UserFilterDTO;
+import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +26,12 @@ public class UserService {
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
+    private final UserSpecification userSpecification;
 
     public List<UserResponseDTO> findAll() {
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
-        Map<String, UserRepresentation> usersMap = fetchAllKeycloakUsers();
-        List<UserEntity> userEntities = userRepo.findAll();
+        Map<String, UserRepresentation> usersMap = fetchAllKeycloakUsers(); //-> api -> consultan todos los usuarios de keycloak -> retorna
+        List<UserEntity> userEntities = userRepo.findAll(); // -> api -> consultan todos los usuarios de la base de datos
 
         for (UserEntity userEntity : userEntities) {
             UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
@@ -233,5 +237,21 @@ public class UserService {
         if (updateDTO.getEnabledStatus() == null) {
             throw new RuntimeException("The field enabledStatus cannot be empty");
         }
+    }
+
+    public List<UserResponseDTO> filter(UserFilterDTO filter) {
+        Specification<UserEntity> spec = userSpecification.build(filter);
+        List<UserEntity> userEntities = userRepo.findAll(spec);
+        List<UserRepresentation> keycloakUsers = keyCloakUserService.getAllUsers();
+
+        Map<String, UserRepresentation> usersMap = keycloakUsers.stream()
+                .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
+
+        return userEntities.stream()
+                .map(userEntity -> {
+                    UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
+                    return mergeEntityWithRepresentationInDTO(userEntity, userRepresentation);
+                })
+                .collect(Collectors.toList());
     }
 }
