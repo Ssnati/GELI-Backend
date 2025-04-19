@@ -23,16 +23,11 @@ public class UserService {
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
-    private Map<String, UserRepresentation> inMemmoryUsersMap = new HashMap<>();
 
     public List<UserResponseDTO> findAll() {
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
-        Map<String, UserRepresentation> usersMap = new HashMap<>();
+        Map<String, UserRepresentation> usersMap = fetchAllKeycloakUsers();
         List<UserEntity> userEntities = userRepo.findAll();
-
-        for (UserRepresentation representation : keyCloakUserService.getAllUsers()) {
-            usersMap.put(representation.getId(), representation);
-        }
 
         for (UserEntity userEntity : userEntities) {
             UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
@@ -68,28 +63,29 @@ public class UserService {
     public UserResponseDTO createUser(UserCreationDTO userCreationDTO) {
         validateUniqueIdentificationNumber(userCreationDTO);
         validateUniqueEmail(userCreationDTO);
+        UserResponseDTO userResponseDTO = mapper.mapCreationDTOToResponseDTO(userCreationDTO);
 
-        // Crear el usuario en Keycloak
-        Response response = createUserInKeycloak(userCreationDTO);
-        String userId = extractUserIdFromResponse(response);
+        String userId = null;
+        try {
+            // Crear el usuario en Keycloak
+            Response response = createUserInKeycloak(userCreationDTO);
+            userId = extractUserIdFromResponse(response);
 
-        // Assign role to user
-        keyCloakUserService.assignRealmRoleToUser(userId, userCreationDTO.getRole());
+            // Assign role to user
+            keyCloakUserService.assignRealmRoleToUser(userId, userCreationDTO.getRole());
 
-        // Crear un mapa temporal de todos los usuarios de Keycloak
-        Map<String, UserRepresentation> temporaryUsersMap = fetchAllKeycloakUsers();
+            // Build the UserResponseDTO
+            UserRepresentation userRepresentation = keyCloakUserService.getById(userId);
 
-        // Guardar en local
-        UserResponseDTO userResponseDTO = buildUserResponseDTO(userCreationDTO, userId);
-        userResponseDTO.setCreationDate(convertLongToLocalDate(temporaryUsersMap.get(userId).getCreatedTimestamp()));
-        userResponseDTO.setModificationRoleDate(convertLongToLocalDate(temporaryUsersMap.get(userId).getCreatedTimestamp()));
-        saveUserInDatabase(userResponseDTO);
+            return saveUserInDatabase(mapper.completeDTOWithRepresentation(userResponseDTO, userRepresentation));
 
-        // Actualizar el mapa en memoria
-        inMemmoryUsersMap = temporaryUsersMap;
-
-        // Retornar la respuesta
-        return userResponseDTO;
+        } catch (Exception e) {
+            // Si ocurre un error, eliminar el usuario de Keycloak si ya fue creado
+            if (userId != null) {
+                keyCloakUserService.deleteUser(userId);
+            }
+            throw new RuntimeException("Error creating user: " + e.getMessage(), e);
+        }
     }
 
     private Map<String, UserRepresentation> fetchAllKeycloakUsers() {
@@ -122,21 +118,21 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Invalid response location from Keycloak"));
     }
 
-    private UserResponseDTO buildUserResponseDTO(UserCreationDTO userCreationDTO, String userId) {
-        UserResponseDTO userResponseDTO = mapper.mapCreationDTOToResponseDTO(userCreationDTO);
-        userResponseDTO.setKeycloakId(userId);
-        return userResponseDTO;
-    }
-
     public LocalDate convertLongToLocalDate(long timestamp) {
         return Instant.ofEpochMilli(timestamp)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
     }
 
-    private void saveUserInDatabase(UserResponseDTO userResponseDTO) {
-        UserEntity userEntity = mapper.mapResponseDTOToEntity(userResponseDTO);
-        userRepo.save(userEntity);
+    private UserResponseDTO saveUserInDatabase(UserResponseDTO userResponseDTO) {
+        try {
+            UserEntity userEntity = mapper.mapResponseDTOToEntity(userResponseDTO);
+            userEntity.setModificationStatusDate(userResponseDTO.getCreationDate());
+            userRepo.save(userEntity);
+            return mapper.completeDTOWithEntity(userResponseDTO, userEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving user in the database: " + e.getMessage(), e);
+        }
     }
 
     private void validateUniqueIdentificationNumber(UserCreationDTO userCreationDTO) {
@@ -146,7 +142,7 @@ public class UserService {
     }
 
     private void validateUniqueEmail(UserCreationDTO userCreationDTO) {
-        String keycloakId = inMemmoryUsersMap.values().stream()
+        String keycloakId = fetchAllKeycloakUsers().values().stream()
                 .filter(user -> user.getEmail().equals(userCreationDTO.getEmail()))
                 .map(UserRepresentation::getId)
                 .findFirst()

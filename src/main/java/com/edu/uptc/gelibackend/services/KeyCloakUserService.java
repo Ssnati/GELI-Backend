@@ -1,15 +1,19 @@
 package com.edu.uptc.gelibackend.services;
 
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class KeyCloakUserService {
@@ -70,5 +74,16 @@ public class KeyCloakUserService {
         UserRepresentation representation = keyCloakProvider.realm(REALM).users().get(id).toRepresentation();
         getRolesForAllUsers(List.of(representation));
         return representation;
+    }
+
+    public void deleteUser(String userId) {
+        try {
+            UserResource userResource = keyCloakProvider.realm(REALM).users().get(userId);
+            userResource.remove();
+        } catch (NotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado con ID: " + userId);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar el usuario: " + e.getMessage(), e);
+        }
     }
 }

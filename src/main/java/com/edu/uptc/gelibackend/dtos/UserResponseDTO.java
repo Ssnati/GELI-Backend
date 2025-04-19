@@ -19,6 +19,6 @@ public class UserResponseDTO {
     private String identification;
     private Boolean enabledStatus;
     private List<String> roles;
-    private LocalDate modificationRoleDate;
+    private LocalDate modificationStatusDate;
     private LocalDate creationDate;
 }

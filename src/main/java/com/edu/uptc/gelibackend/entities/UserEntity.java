@@ -28,7 +28,7 @@ public class UserEntity {
     private String identification;
 
     @NotNull
-    @Column(name = "modification_role_date", nullable = false)
-    private LocalDate modificationRoleDate;
+    @Column(name = "modification_status_date", nullable = false)
+    private LocalDate modificationStatusDate;
 
 }

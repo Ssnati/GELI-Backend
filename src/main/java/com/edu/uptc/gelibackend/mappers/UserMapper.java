@@ -18,7 +18,7 @@ public class UserMapper {
                 dto.getId(),
                 dto.getKeycloakId(),
                 dto.getIdentification(),
-                dto.getModificationRoleDate()
+                dto.getModificationStatusDate()
         );
     }
 
@@ -39,11 +39,12 @@ public class UserMapper {
         dto.setId(entity.getId());
         dto.setKeycloakId(entity.getKeycloakId());
         dto.setIdentification(entity.getIdentification());
-        dto.setModificationRoleDate(entity.getModificationRoleDate());
+        dto.setModificationStatusDate(entity.getModificationStatusDate());
         return dto;
     }
 
     public UserResponseDTO completeDTOWithRepresentation(UserResponseDTO dto, UserRepresentation representation) {
+        dto.setKeycloakId(representation.getId());
         dto.setFirstName(representation.getFirstName());
         dto.setLastName(representation.getLastName());
         dto.setEmail(representation.getEmail());
@@ -68,11 +69,7 @@ public class UserMapper {
         userRepresentation.setEmail(dto.getEmail());
         userRepresentation.setUsername(dto.getEmail().split("@")[0]);
         userRepresentation.setEnabled(true);
-        if (dto.getRole().equals("QUALITY-ADMIN-USER") || dto.getRole().equals("AUTHORIZED-USER")) {
-            userRepresentation.setRealmRoles(List.of(dto.getRole()));
-        } else {
-            throw new RuntimeException("Invalid role");
-        }
+        userRepresentation.setRealmRoles(List.of(dto.getRole()));
         return userRepresentation;
     }
 
@@ -82,11 +79,7 @@ public class UserMapper {
         userResponseDTO.setLastName(dto.getLastName());
         userResponseDTO.setEmail(dto.getEmail());
         userResponseDTO.setIdentification(dto.getIdentification());
-        if (dto.getRole().equals("QUALITY-ADMIN-USER") || dto.getRole().equals("AUTHORIZED-USER")) {
-            userResponseDTO.setRoles(List.of(dto.getRole()));
-        } else {
-            throw new RuntimeException("Invalid role");
-        }
+        userResponseDTO.setRoles(List.of(dto.getRole()));
         return userResponseDTO;
     }
 }
