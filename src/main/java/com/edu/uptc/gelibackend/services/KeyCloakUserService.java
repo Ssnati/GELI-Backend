@@ -65,4 +65,10 @@ public class KeyCloakUserService {
                 .realmLevel()
                 .add(Collections.singletonList(role));
     }
+
+    public UserRepresentation getById(String id) {
+        UserRepresentation representation = keyCloakProvider.realm(REALM).users().get(id).toRepresentation();
+        getRolesForAllUsers(List.of(representation));
+        return representation;
+    }
 }

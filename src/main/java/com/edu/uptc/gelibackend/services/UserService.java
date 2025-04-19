@@ -37,60 +37,31 @@ public class UserService {
         for (UserEntity userEntity : userEntities) {
             UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
             if (userRepresentation != null) {
-                UserResponseDTO userResponseDTO = mapper.completeDTOWithRepresentation(new UserResponseDTO(), userRepresentation);
-                userResponseDTOList.add(mapper.completeDTOWithEntity(userResponseDTO, userEntity));
+                userResponseDTOList.add(mergeEntityWithRepresentationInDTO(userEntity, userRepresentation));
             }
         }
         return userResponseDTOList;
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
-        // Buscar el usuario local por ID
         Optional<UserEntity> userEntityOptional = userRepo.findById(id);
         if (userEntityOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        // Asegurarse de que el mapa en memoria esté actualizado
-        updateInMemoryUsersMapIfNeeded();
-
-        // Buscar el usuario en Keycloak usando el mapa en memoria
         UserEntity userEntity = userEntityOptional.get();
-        UserRepresentation keycloakUser = inMemmoryUsersMap.get(userEntity.getKeycloakId());
+        UserRepresentation keycloakUser = keyCloakUserService.getById(userEntity.getKeycloakId());
 
-        // Si no se encuentra en Keycloak, devolver vacío
         if (keycloakUser == null) {
             return Optional.empty();
         }
 
-        // Combinar datos locales y de Keycloak en un DTO
-        UserResponseDTO userResponseDTO = mergeEntityWithRepresentation(userEntity, inMemmoryUsersMap);
-        return Optional.of(userResponseDTO);
+        return Optional.of(mergeEntityWithRepresentationInDTO(userEntity, keycloakUser));
     }
 
-    private void updateInMemoryUsersMapIfNeeded() {
-        // Si el mapa en memoria está vacío, actualizarlo
-        if (inMemmoryUsersMap.isEmpty()) {
-            List<UserRepresentation> keycloakUsers;
-            try {
-                keycloakUsers = keyCloakUserService.getAllUsers();
-            } catch (Exception e) {
-                throw new RuntimeException("Error fetching users from Keycloak", e);
-            }
-            inMemmoryUsersMap = keycloakUsers.stream()
-                    .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
-        }
-    }
 
-    private UserResponseDTO mergeEntityWithRepresentation(UserEntity userEntity, Map<String, UserRepresentation> keycloakUserMap) {
-        UserResponseDTO dto = new UserResponseDTO();
-        // Completar el DTO con datos de Keycloak si existe
-        UserRepresentation keycloakUser = keycloakUserMap.get(userEntity.getKeycloakId());
-        if (keycloakUser != null) {
-            dto = mapper.completeDTOWithRepresentation(dto, keycloakUser);
-        }
-
-        // Completar el DTO con datos de la entidad local
+    private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
+        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
         return mapper.completeDTOWithEntity(dto, userEntity);
     }
 
