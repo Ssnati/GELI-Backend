@@ -62,7 +62,6 @@ public class UserMapper {
         dto.setCreationDate(Instant.ofEpochMilli(representation.getCreatedTimestamp())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate());
-//        dto.setRole(representation.getRealmRoles());
         return dto;
     }
 
@@ -77,8 +76,6 @@ public class UserMapper {
         userRepresentation.setFirstName(dto.getFirstName());
         userRepresentation.setLastName(dto.getLastName());
         userRepresentation.setEmail(dto.getEmail());
-        userRepresentation.setUsername(dto.getEmail().split("@")[0]);
-        userRepresentation.setEnabled(true);
         userRepresentation.setRealmRoles(List.of(dto.getRole()));
         return userRepresentation;
     }

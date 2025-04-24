@@ -60,15 +60,10 @@ public class UserService {
         return Optional.empty();
     }
 
-
-    private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
-        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
-        return mapper.completeDTOWithEntity(dto, userEntity);
-    }
-
+    @Transactional
     public UserResponseDTO createUser(UserCreationDTO userCreationDTO) {
-        validateUniqueIdentificationNumber(userCreationDTO);
         validateUniqueEmail(userCreationDTO);
+        validateUniqueIdentificationNumber(userCreationDTO);
         UserResponseDTO userResponseDTO = mapper.mapCreationDTOToResponseDTO(userCreationDTO);
 
         String userId = null;
@@ -83,7 +78,16 @@ public class UserService {
             // Build the UserResponseDTO
             UserRepresentation userRepresentation = keyCloakUserService.getById(userId);
 
-            return saveUserInDatabase(mapper.completeDTOWithRepresentation(userResponseDTO, userRepresentation));
+            // Map the Keycloak user representation to the UserResponseDTO
+            userResponseDTO.setRole(userCreationDTO.getRole());
+            UserEntity entity = saveUserInDatabase(mapper.completeDTOWithRepresentation(userResponseDTO, userRepresentation));
+            userResponseDTO.setId(entity.getId());
+
+            // Save the user status history
+            UserStatusHistoryEntity statusHistory = saveUserRoleHistoryInDatabase(entity);
+            userResponseDTO.setModificationStatusDate(statusHistory.getModificationStatusDate());
+
+            return userResponseDTO;
 
         } catch (Exception e) {
             // Si ocurre un error, eliminar el usuario de Keycloak si ya fue creado
@@ -92,6 +96,11 @@ public class UserService {
             }
             throw new RuntimeException("Error creating user: " + e.getMessage(), e);
         }
+    }
+
+    private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
+        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
+        return mapper.completeDTOWithEntity(dto, userEntity);
     }
 
     private Map<String, UserRepresentation> fetchAllKeycloakUsers() {
@@ -106,7 +115,10 @@ public class UserService {
 
     private Response createUserInKeycloak(UserCreationDTO userCreationDTO) {
         try {
-            return keyCloakUserService.createUser(mapper.mapCreationDTOToRepresentation(userCreationDTO));
+            UserRepresentation userRepresentation = mapper.mapCreationDTOToRepresentation(userCreationDTO);
+            userRepresentation.setEnabled(true);
+            userRepresentation.setUsername(userCreationDTO.getEmail().split("@")[0]);
+            return keyCloakUserService.createUser(userRepresentation);
         } catch (Exception e) {
             throw new RuntimeException("Error creating user in Keycloak", e);
         }
@@ -124,12 +136,21 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Invalid response location from Keycloak"));
     }
 
-    private UserResponseDTO saveUserInDatabase(UserResponseDTO userResponseDTO) {
+    private UserStatusHistoryEntity saveUserRoleHistoryInDatabase(UserEntity entity) {
+        UserStatusHistoryEntity historyEntity = new UserStatusHistoryEntity();
+        historyEntity.setUser(entity);
+        historyEntity.setStatusToDate(entity.getState());
+        historyEntity.setModificationStatusDate(LocalDate.now());
         try {
-            UserEntity userEntity = mapper.mapResponseDTOToEntity(userResponseDTO);
-//            userEntity.setModificationStatusDate(userResponseDTO.getCreationDate());
-            userRepo.save(userEntity);
-            return mapper.completeDTOWithEntity(userResponseDTO, userEntity);
+            return historyRepo.save(historyEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving user status history in the database: " + e.getMessage(), e);
+        }
+    }
+
+    private UserEntity saveUserInDatabase(UserResponseDTO userResponseDTO) {
+        try {
+            return userRepo.save(mapper.mapResponseDTOToEntity(userResponseDTO));
         } catch (Exception e) {
             throw new RuntimeException("Error saving user in the database: " + e.getMessage(), e);
         }
@@ -142,15 +163,9 @@ public class UserService {
     }
 
     private void validateUniqueEmail(UserCreationDTO userCreationDTO) {
-        String keycloakId = fetchAllKeycloakUsers().values().stream()
-                .filter(user -> user.getEmail().equals(userCreationDTO.getEmail()))
-                .map(UserRepresentation::getId)
-                .findFirst()
-                .orElse(null);
-        if (keycloakId != null) {
-            throw new RuntimeException("Email already exists in Keycloak");
+        if (userRepo.findByEmail(userCreationDTO.getEmail()) != null) {
+            throw new RuntimeException("Email already exists");
         }
-
     }
 
     @Transactional
