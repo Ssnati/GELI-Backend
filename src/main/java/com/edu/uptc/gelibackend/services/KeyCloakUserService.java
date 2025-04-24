@@ -89,14 +89,17 @@ public class KeyCloakUserService {
         }
     }
 
-    public void updateUser(UserRepresentation keycloakUser, List<String> newRoles) {
+    public void updateUser(UserRepresentation keycloakUser) {
         String userId = keycloakUser.getId();
         UsersResource usersResource = keyCloakProvider.realm(REALM).users();
 
         // 1. Actualizar atributos básicos del usuario
         usersResource.get(userId).update(keycloakUser);
+    }
 
+    public void updateUserRoles(String userId, List<String> newRoles) {
         RealmResource realmResource = keyCloakProvider.realm(REALM);
+        UsersResource usersResource = realmResource.users();
 
         // Obtener roles por defecto del realm
         List<RoleRepresentation> defaultRoles = List.of(realmResource.roles().get("default-roles-".concat(REALM)).toRepresentation());

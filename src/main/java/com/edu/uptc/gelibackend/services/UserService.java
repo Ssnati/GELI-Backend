@@ -103,16 +103,6 @@ public class UserService {
         return mapper.completeDTOWithEntity(dto, userEntity);
     }
 
-    private Map<String, UserRepresentation> fetchAllKeycloakUsers() {
-        try {
-            List<UserRepresentation> keycloakUsers = keyCloakUserService.getAllUsers();
-            return keycloakUsers.stream()
-                    .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
-        } catch (Exception e) {
-            throw new RuntimeException("Error fetching users from Keycloak", e);
-        }
-    }
-
     private Response createUserInKeycloak(UserCreationDTO userCreationDTO) {
         try {
             UserRepresentation userRepresentation = mapper.mapCreationDTOToRepresentation(userCreationDTO);
@@ -169,89 +159,66 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO updateUser(String username, UserUpdateDTO updateDTO) {
+    public UserResponseDTO updateUser(Long id, UserUpdateDTO updateDTO) {
         validateEmptyFields(updateDTO);
 
-        UserResponseDTO userResponseDTO = new UserResponseDTO();
+
+        Optional<UserEntity> optional = userRepo.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("User with ID " + id + " not found");
+        }
+
+        UserEntity userEntity = optional.get();
+
         // Obtener usuario de Keycloak
-        UserRepresentation keycloakUser = keyCloakUserService.getAllUsers()
-                .stream()
-                .filter(user -> user.getUsername().equals(username))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found by username: " + username));
-
-        // Obtener usuario existente
-        UserEntity existingEntity = userRepo.findAll().stream()
-                .filter(user -> user.getKeycloakId().equals(keycloakUser.getId()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found in database"));
-
-        userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keycloakUser);
-        userResponseDTO = mapper.completeDTOWithEntity(userResponseDTO, existingEntity);
-
-        // Validar identificación
-        validateIdentificationUpdate(updateDTO, existingEntity);
+        UserRepresentation keycloakUser = keyCloakUserService.getById(userEntity.getKeycloakId());
+        if (keycloakUser == null) {
+            throw new RuntimeException("Keycloak user not found");
+        }
 
         // Manejar cambio de estado
-        handleChangeStatus(updateDTO, keycloakUser, existingEntity);
-        keycloakUser.setFirstName(updateDTO.getFirstName());
-        keycloakUser.setLastName(updateDTO.getLastName());
+        UserStatusHistoryEntity statusHistory = handleChangeStatus(updateDTO, keycloakUser, userEntity);
 
-
-        // buscar en los roles del realm, si el rol nuevo no se encuentra, lanzar una excepción
-        keyCloakUserService.getAllRoles()
-                .stream()
-                .filter(role -> role.getName().equals(updateDTO.getRole()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Role not found in Keycloak"));
-
+        if (statusHistory == null) {
+            throw new RuntimeException("No changes detected in user status");
+        }
 
         try {
-//             Actualizar base de datos primero
-            UserEntity updatedEntity = userRepo.save(existingEntity);
+            // Actualizar en local
+            userRepo.save(userEntity);
 
-            // Actualizar Keycloak (roles y datos básicos)
-            List<String> newRoles = Collections.singletonList(updateDTO.getRole());
-            keyCloakUserService.updateUser(keycloakUser, newRoles);
-            keyCloakUserService.assignRealmRoleToUser(keycloakUser.getId(), updateDTO.getRole());
+            // Crear el nuevo registro de estado
+            historyRepo.save(statusHistory);
 
-            userResponseDTO = mapper.completeDTOWithRepresentation(userResponseDTO, keyCloakUserService.getById(keycloakUser.getId()));
-            return mapper.completeDTOWithEntity(userResponseDTO, updatedEntity);
+            // Actualizar Keycloak
+            keyCloakUserService.updateUser(keycloakUser);
+
+            UserResponseDTO userResponseDTO = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
+            userResponseDTO.setModificationStatusDate(statusHistory.getModificationStatusDate());
+            return mapper.completeDTOWithEntity(userResponseDTO, userEntity);
         } catch (Exception e) {
-            throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating user: " + e.getMessage(), e);
         }
 
     }
 
-    private void handleChangeStatus(UserUpdateDTO updateDTO, UserRepresentation keycloakUser, UserEntity existingEntity) {
-        if (updateDTO.getEnabledStatus().equals(keycloakUser.isEnabled())) {
-            return;
+    private UserStatusHistoryEntity handleChangeStatus(UserUpdateDTO updateDTO, UserRepresentation keycloakUser, UserEntity existingEntity) {
+        if (updateDTO.getIsActive().equals(keycloakUser.isEnabled())) {
+            return null; // No hay cambios en el estado
         }
-        keycloakUser.setEnabled(updateDTO.getEnabledStatus());
-//        existingEntity.setModificationStatusDate(LocalDate.now());
-    }
+        keycloakUser.setEnabled(updateDTO.getIsActive());
+        existingEntity.setState(updateDTO.getIsActive());
 
-    private void validateIdentificationUpdate(UserUpdateDTO updateDTO, UserEntity existingEntity) {
-        if (updateDTO.getIdentification().equals(existingEntity.getIdentification())) {
-            return;
-        }
-        UserCreationDTO userCreationDTO = new UserCreationDTO();
-        userCreationDTO.setIdentification(updateDTO.getIdentification());
-        validateUniqueIdentificationNumber(userCreationDTO);
-        existingEntity.setIdentification(updateDTO.getIdentification());
+        UserStatusHistoryEntity entity = new UserStatusHistoryEntity();
+        entity.setUser(existingEntity);
+        entity.setStatusToDate(updateDTO.getIsActive());
+        entity.setModificationStatusDate(LocalDate.now());
+
+        return entity;
     }
 
     private void validateEmptyFields(UserUpdateDTO updateDTO) {
-        if (updateDTO.getFirstName() == null || updateDTO.getFirstName().isEmpty()) {
-            throw new RuntimeException("The field firstName cannot be empty");
-        }
-        if (updateDTO.getLastName() == null || updateDTO.getLastName().isEmpty()) {
-            throw new RuntimeException("The field lastName cannot be empty");
-        }
-        if (updateDTO.getIdentification() == null || updateDTO.getIdentification().isEmpty()) {
-            throw new RuntimeException("The field identification cannot be empty");
-        }
-        if (updateDTO.getEnabledStatus() == null) {
+        if (updateDTO.getIsActive() == null) {
             throw new RuntimeException("The field enabledStatus cannot be empty");
         }
     }
