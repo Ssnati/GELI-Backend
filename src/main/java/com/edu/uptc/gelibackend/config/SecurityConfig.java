@@ -23,7 +23,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/swagger-ui/**", "/swagger-ui/index.html", "/v3/api-docs/**").permitAll();
+                    auth.anyRequest().authenticated();
+                })
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwtConfigurer ->
                                 jwtConfigurer.jwtAuthenticationConverter(converter)))

@@ -42,10 +42,10 @@ public class UsersController {
         return ResponseEntity.status(201).body(createdUser);
     }
 
-    @PutMapping("/{username}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String username, @RequestBody UserUpdateDTO user) {
-        UserResponseDTO updatedUser = userService.updateUser(username, user);
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserUpdateDTO user) {
+        UserResponseDTO updatedUser = userService.updateUser(id, user);
         return ResponseEntity.ok(updatedUser);
     }
 

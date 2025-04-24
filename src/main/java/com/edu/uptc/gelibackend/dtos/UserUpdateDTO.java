@@ -8,9 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateDTO {
-    private String firstName;
-    private String lastName;
-    private String identification;
-    private Boolean enabledStatus;
-    private String role;
+    private Boolean isActive;
 }
