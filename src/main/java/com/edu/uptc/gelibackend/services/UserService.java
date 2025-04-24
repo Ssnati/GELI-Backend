@@ -47,19 +47,17 @@ public class UserService {
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
-        Optional<UserEntity> userEntityOptional = userRepo.findById(id);
-        if (userEntityOptional.isEmpty()) {
-            return Optional.empty();
+        Optional<UserEntity> optional = userRepo.findById(id);
+        if (optional.isPresent()) {
+            UserEntity entity = optional.get();
+            UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
+            UserStatusHistoryEntity statusDateDesc = historyRepo.findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
+            if (statusDateDesc != null) {
+                dto.setModificationStatusDate(statusDateDesc.getModificationStatusDate());
+            }
+            return Optional.of(dto);
         }
-
-        UserEntity userEntity = userEntityOptional.get();
-        UserRepresentation keycloakUser = keyCloakUserService.getById(userEntity.getKeycloakId());
-
-        if (keycloakUser == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(mergeEntityWithRepresentationInDTO(userEntity, keycloakUser));
+        return Optional.empty();
     }
 
 
