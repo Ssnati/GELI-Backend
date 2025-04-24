@@ -12,7 +12,7 @@ import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
 import com.edu.uptc.gelibackend.repositories.EquipmentRepository;
 import com.edu.uptc.gelibackend.repositories.FunctionRepository;
 import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
-import com.edu.uptc.gelibackend.specifications.EquipmentFilterDTO;
+import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
 
 import lombok.RequiredArgsConstructor;

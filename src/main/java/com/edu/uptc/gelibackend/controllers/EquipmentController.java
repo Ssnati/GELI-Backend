@@ -2,7 +2,7 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
-import com.edu.uptc.gelibackend.specifications.EquipmentFilterDTO;
+import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

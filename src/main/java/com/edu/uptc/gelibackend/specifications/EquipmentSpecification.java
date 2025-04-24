@@ -1,7 +1,7 @@
 package com.edu.uptc.gelibackend.specifications;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
+import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

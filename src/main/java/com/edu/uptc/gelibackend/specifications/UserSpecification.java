@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.specifications;
 
 import com.edu.uptc.gelibackend.entities.UserEntity;
+import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

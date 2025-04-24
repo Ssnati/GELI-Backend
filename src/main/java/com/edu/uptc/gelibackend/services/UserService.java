@@ -6,7 +6,7 @@ import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
-import com.edu.uptc.gelibackend.specifications.UserFilterDTO;
+import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;

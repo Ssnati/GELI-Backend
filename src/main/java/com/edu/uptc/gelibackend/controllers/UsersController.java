@@ -4,7 +4,7 @@ import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.services.UserService;
-import com.edu.uptc.gelibackend.specifications.UserFilterDTO;
+import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
