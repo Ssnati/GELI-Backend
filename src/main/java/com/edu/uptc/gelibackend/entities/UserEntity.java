@@ -24,11 +24,30 @@ public class UserEntity {
     private String keycloakId;
 
     @NotNull
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @NotNull
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @NotNull
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
+
+    @NotNull
     @Column(name = "identification", unique = true, nullable = false)
     private String identification;
 
     @NotNull
-    @Column(name = "modification_status_date", nullable = false)
-    private LocalDate modificationStatusDate;
+    @Column(name = "state", nullable = false)
+    private Boolean state;
 
+    @NotNull
+    @Column(name = "role", nullable = false)
+    private String role;
+
+    @NotNull
+    @Column(name = "create_date_user", nullable = false)
+    private LocalDate createDateUser;
 }

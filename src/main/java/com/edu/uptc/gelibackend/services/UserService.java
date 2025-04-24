@@ -4,8 +4,10 @@ import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.entities.UserEntity;
+import com.edu.uptc.gelibackend.entities.UserStatusHistoryEntity;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
+import com.edu.uptc.gelibackend.repositories.UserStatusHistoryRepository;
 import com.edu.uptc.gelibackend.specifications.UserFilterDTO;
 import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +25,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserStatusHistoryRepository historyRepo;
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
     private final UserSpecification userSpecification;
 
     public List<UserResponseDTO> findAll() {
-        List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
-        Map<String, UserRepresentation> usersMap = fetchAllKeycloakUsers(); //-> api -> consultan todos los usuarios de keycloak -> retorna
         List<UserEntity> userEntities = userRepo.findAll(); // -> api -> consultan todos los usuarios de la base de datos
+        List<UserStatusHistoryEntity> historyEntities = historyRepo.findAll();
 
-        for (UserEntity userEntity : userEntities) {
-            UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
-            if (userRepresentation != null) {
-                userResponseDTOList.add(mergeEntityWithRepresentationInDTO(userEntity, userRepresentation));
-            }
-        }
-        return userResponseDTOList;
+        List<UserResponseDTO> userResponseDTOs = userEntities.stream()
+                .map(entity -> mapper.completeDTOWithEntity(new UserResponseDTO(), entity))
+                .toList();
+
+        userResponseDTOs.forEach(dto -> historyEntities.stream()
+                .filter(history -> history.getUser().getId().equals(dto.getId()))
+                .max(Comparator.comparing(UserStatusHistoryEntity::getModificationStatusDate))
+                .ifPresent(history -> dto.setModificationStatusDate(history.getModificationStatusDate())));
+        return userResponseDTOs;
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
@@ -125,7 +129,7 @@ public class UserService {
     private UserResponseDTO saveUserInDatabase(UserResponseDTO userResponseDTO) {
         try {
             UserEntity userEntity = mapper.mapResponseDTOToEntity(userResponseDTO);
-            userEntity.setModificationStatusDate(userResponseDTO.getCreationDate());
+//            userEntity.setModificationStatusDate(userResponseDTO.getCreationDate());
             userRepo.save(userEntity);
             return mapper.completeDTOWithEntity(userResponseDTO, userEntity);
         } catch (Exception e) {
@@ -211,7 +215,7 @@ public class UserService {
             return;
         }
         keycloakUser.setEnabled(updateDTO.getEnabledStatus());
-        existingEntity.setModificationStatusDate(LocalDate.now());
+//        existingEntity.setModificationStatusDate(LocalDate.now());
     }
 
     private void validateIdentificationUpdate(UserUpdateDTO updateDTO, UserEntity existingEntity) {

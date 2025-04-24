@@ -14,12 +14,17 @@ import java.util.List;
 public class UserMapper {
 
     public UserEntity mapResponseDTOToEntity(UserResponseDTO dto) {
-        return new UserEntity(
-                dto.getId(),
-                dto.getKeycloakId(),
-                dto.getIdentification(),
-                dto.getModificationStatusDate()
-        );
+        UserEntity entity = new UserEntity();
+        entity.setId(dto.getId());
+        entity.setKeycloakId(dto.getKeycloakId());
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setEmail(dto.getEmail());
+        entity.setIdentification(dto.getIdentification());
+        entity.setState(dto.getEnabledStatus());
+        entity.setRole(dto.getRole());
+        entity.setCreateDateUser(dto.getCreationDate());
+        return entity;
     }
 
     public UserRepresentation mapResponseDTOToRepresentation(UserResponseDTO dto) {
@@ -30,7 +35,7 @@ public class UserMapper {
         userRepresentation.setEmail(dto.getEmail());
         userRepresentation.setUsername(dto.getEmail().split("@")[0]);
         userRepresentation.setEnabled(dto.getEnabledStatus());
-        userRepresentation.setRealmRoles(dto.getRoles());
+        userRepresentation.setRealmRoles(List.of(dto.getRole()));
         userRepresentation.setCreatedTimestamp(dto.getCreationDate().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         return userRepresentation;
     }
@@ -38,8 +43,13 @@ public class UserMapper {
     public UserResponseDTO completeDTOWithEntity(UserResponseDTO dto, UserEntity entity) {
         dto.setId(entity.getId());
         dto.setKeycloakId(entity.getKeycloakId());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setEmail(entity.getEmail());
         dto.setIdentification(entity.getIdentification());
-        dto.setModificationStatusDate(entity.getModificationStatusDate());
+        dto.setEnabledStatus(entity.getState());
+        dto.setRole(entity.getRole());
+        dto.setCreationDate(entity.getCreateDateUser());
         return dto;
     }
 
@@ -52,7 +62,7 @@ public class UserMapper {
         dto.setCreationDate(Instant.ofEpochMilli(representation.getCreatedTimestamp())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate());
-        dto.setRoles(representation.getRealmRoles());
+//        dto.setRole(representation.getRealmRoles());
         return dto;
     }
 
@@ -79,7 +89,7 @@ public class UserMapper {
         userResponseDTO.setLastName(dto.getLastName());
         userResponseDTO.setEmail(dto.getEmail());
         userResponseDTO.setIdentification(dto.getIdentification());
-        userResponseDTO.setRoles(List.of(dto.getRole()));
+        userResponseDTO.setRole((dto.getRole()));
         return userResponseDTO;
     }
 }

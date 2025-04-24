@@ -18,7 +18,7 @@ public class UserResponseDTO {
     private String email;
     private String identification;
     private Boolean enabledStatus;
-    private List<String> roles;
+    private String role;
     private LocalDate modificationStatusDate;
     private LocalDate creationDate;
 }
