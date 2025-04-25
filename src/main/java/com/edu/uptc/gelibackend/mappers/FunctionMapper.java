@@ -4,6 +4,8 @@ import com.edu.uptc.gelibackend.dtos.FunctionDTO;
 import com.edu.uptc.gelibackend.entities.FunctionEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class FunctionMapper {
 
@@ -14,18 +16,16 @@ public class FunctionMapper {
     }
 
     public FunctionEntity mapDTOToEntity(FunctionDTO functionDTO) {
-        return new FunctionEntity(
-                functionDTO.getId(),
-                functionDTO.getFunctionName(),
-                equipmentMapper.mapDTOToEntity(functionDTO.getEquipment())
-        );
+        FunctionEntity entity = new FunctionEntity();
+        entity.setId(functionDTO.getId());
+        entity.setFunctionName(functionDTO.getFunctionName());
+        return entity;
     }
 
     public FunctionDTO mapEntityToDTO(FunctionEntity functionEntity) {
-        return new FunctionDTO(
-                functionEntity.getId(),
-                functionEntity.getFunctionName(),
-                equipmentMapper.mapEntityToDTO(functionEntity.getEquipment())
-        );
+        FunctionDTO functionDTO = new FunctionDTO();
+        functionDTO.setId(functionEntity.getId());
+        functionDTO.setFunctionName(functionEntity.getFunctionName());
+        return functionDTO;
     }
 }

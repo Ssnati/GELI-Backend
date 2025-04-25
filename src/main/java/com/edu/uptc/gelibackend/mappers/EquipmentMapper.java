@@ -14,14 +14,14 @@ public class EquipmentMapper {
     }
 
     public EquipmentEntity mapDTOToEntity(EquipmentDTO equipmentDTO) {
-        return new EquipmentEntity(
-                equipmentDTO.getId(),
-                equipmentDTO.getEquipmentName(),
-                equipmentDTO.getBrand(),
-                equipmentDTO.getInventoryNumber(),
-                laboratoryMapper.mapDTOToEntity(equipmentDTO.getLaboratory()),
-                equipmentDTO.getAvailability()
-        );
+        EquipmentEntity entity = new EquipmentEntity();
+        entity.setId(equipmentDTO.getId());
+        entity.setEquipmentName(equipmentDTO.getEquipmentName());
+        entity.setBrand(equipmentDTO.getBrand());
+        entity.setInventoryNumber(equipmentDTO.getInventoryNumber());
+        entity.setLaboratory(laboratoryMapper.mapDTOToEntity(equipmentDTO.getLaboratory()));
+        entity.setAvailability(equipmentDTO.getAvailability());
+        return entity;
     }
 
     public EquipmentDTO mapEntityToDTO(EquipmentEntity equipmentEntity) {

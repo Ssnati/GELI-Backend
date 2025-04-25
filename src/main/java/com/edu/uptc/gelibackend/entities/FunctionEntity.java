@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -15,15 +17,13 @@ public class FunctionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_function")
     private Long id;
 
     @NotNull
     @Column(name = "function_name", nullable = false)
     private String functionName;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "equipment_id", nullable = false)
-    private EquipmentEntity equipment;
-
+    @OneToMany(mappedBy = "function", cascade = CascadeType.ALL)
+    private List<EquipmentFunctionsEntity> equipmentFunctions;
 }

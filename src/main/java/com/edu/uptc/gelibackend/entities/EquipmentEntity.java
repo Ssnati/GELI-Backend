@@ -16,6 +16,7 @@ public class EquipmentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_equipment")
     private Long id;
 
     @NotNull
@@ -35,7 +36,9 @@ public class EquipmentEntity {
     @JoinColumn(name = "laboratory_location_id", nullable = false)
     private LaboratoryEntity laboratory;
 
-    @NotNull
-    @Column(name = "equipment_availability", nullable = false)
+    @Column(name = "availability", nullable = false)
     private Boolean availability;
+
+    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EquipmentFunctionsEntity> equipmentFunctions;
 }
