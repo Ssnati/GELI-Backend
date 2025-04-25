@@ -1,19 +1,23 @@
 package com.edu.uptc.gelibackend.mappers;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
+import com.edu.uptc.gelibackend.entities.EquipmentFunctionsEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
+@RequiredArgsConstructor
 public class EquipmentMapper {
 
     private final LaboratoryMapper laboratoryMapper;
+    private final FunctionMapper functionMapper;
 
-    public EquipmentMapper(LaboratoryMapper laboratoryMapper) {
-        this.laboratoryMapper = laboratoryMapper;
-    }
 
-    public EquipmentEntity mapDTOToEntity(EquipmentDTO equipmentDTO) {
+    public EquipmentEntity toEntity(EquipmentResponseDTO equipmentDTO) {
         EquipmentEntity entity = new EquipmentEntity();
         entity.setId(equipmentDTO.getId());
         entity.setEquipmentName(equipmentDTO.getEquipmentName());
@@ -24,14 +28,24 @@ public class EquipmentMapper {
         return entity;
     }
 
-    public EquipmentDTO mapEntityToDTO(EquipmentEntity equipmentEntity) {
-        return new EquipmentDTO(
-                equipmentEntity.getId(),
-                equipmentEntity.getEquipmentName(),
-                equipmentEntity.getBrand(),
-                equipmentEntity.getInventoryNumber(),
-                laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()),
-                equipmentEntity.getAvailability()
-        );
+    public EquipmentResponseDTO toResponseDTO(EquipmentEntity equipmentEntity) {
+        EquipmentResponseDTO equipmentResponseDTO = new EquipmentResponseDTO();
+        equipmentResponseDTO.setId(equipmentEntity.getId());
+        equipmentResponseDTO.setEquipmentName(equipmentEntity.getEquipmentName());
+        equipmentResponseDTO.setBrand(equipmentEntity.getBrand());
+        equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
+        equipmentResponseDTO.setLaboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()));
+        equipmentResponseDTO.setFunctions(functionMapper.toDTOs(equipmentEntity.getEquipmentFunctions()));
+        equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
+        return equipmentResponseDTO;
+    }
+
+    public EquipmentEntity toEntity(EquipmentCreationDTO dto) {
+        EquipmentEntity equipmentEntity = new EquipmentEntity();
+        equipmentEntity.setEquipmentName(dto.getEquipmentName());
+        equipmentEntity.setBrand(dto.getBrand());
+        equipmentEntity.setInventoryNumber(dto.getInventoryNumber());
+        equipmentEntity.setAvailability(dto.getAvailability());
+        return equipmentEntity;
     }
 }

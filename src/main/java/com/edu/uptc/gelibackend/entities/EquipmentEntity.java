@@ -41,4 +41,7 @@ public class EquipmentEntity {
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EquipmentFunctionsEntity> equipmentFunctions;
+
+//    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments;
 }

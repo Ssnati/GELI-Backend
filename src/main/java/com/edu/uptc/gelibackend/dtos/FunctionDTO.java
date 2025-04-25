@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class FunctionDTO {
     private Long id;
     private String functionName;
-    private EquipmentDTO equipment;
 }

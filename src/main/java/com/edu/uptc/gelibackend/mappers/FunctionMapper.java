@@ -1,31 +1,41 @@
 package com.edu.uptc.gelibackend.mappers;
 
 import com.edu.uptc.gelibackend.dtos.FunctionDTO;
+import com.edu.uptc.gelibackend.entities.EquipmentFunctionsEntity;
 import com.edu.uptc.gelibackend.entities.FunctionEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class FunctionMapper {
 
-    private final EquipmentMapper equipmentMapper;
-
-    public FunctionMapper(EquipmentMapper equipmentMapper) {
-        this.equipmentMapper = equipmentMapper;
-    }
-
-    public FunctionEntity mapDTOToEntity(FunctionDTO functionDTO) {
+    public FunctionEntity toEntity(FunctionDTO functionDTO) {
         FunctionEntity entity = new FunctionEntity();
         entity.setId(functionDTO.getId());
         entity.setFunctionName(functionDTO.getFunctionName());
         return entity;
     }
 
-    public FunctionDTO mapEntityToDTO(FunctionEntity functionEntity) {
+    public FunctionDTO toDTO(FunctionEntity functionEntity) {
         FunctionDTO functionDTO = new FunctionDTO();
         functionDTO.setId(functionEntity.getId());
         functionDTO.setFunctionName(functionEntity.getFunctionName());
         return functionDTO;
+    }
+    
+    public List<FunctionDTO> toDTOs(List<EquipmentFunctionsEntity> equipmentFunctions) {
+        return equipmentFunctions.stream()
+                .map(EquipmentFunctionsEntity::getFunction)
+                .map(this::toDTO)
+                .toList();
+    }
+
+    public List<FunctionEntity> toEntities(List<EquipmentFunctionsEntity> equipmentFunctions) {
+        return equipmentFunctions.stream()
+                .map(EquipmentFunctionsEntity::getFunction)
+                .toList();
     }
 }

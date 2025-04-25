@@ -4,14 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EquipmentDTO {
-    private Long id;
+public class EquipmentCreationDTO {
     private String equipmentName;
     private String brand;
     private String inventoryNumber;
-    private LaboratoryDTO laboratory;
+    private Long laboratoryId;
     private Boolean availability;
+    private List<Long> authorizedUsersIds;
+    private List<Long> functions;
 }

@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +21,29 @@ public class EquipmentController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<List<EquipmentDTO>> getAll() {
-        List<EquipmentDTO> list = service.findAll();
+    public ResponseEntity<List<EquipmentResponseDTO>> getAll() {
+        List<EquipmentResponseDTO> list = service.findAll();
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<EquipmentDTO> getById(@PathVariable Long id) {
-        EquipmentDTO equipment = service.findById(id);
+    public ResponseEntity<EquipmentResponseDTO> getById(@PathVariable Long id) {
+        EquipmentResponseDTO equipment = service.findById(id);
         return equipment != null ? ResponseEntity.ok(equipment) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
-    public ResponseEntity<EquipmentDTO> create(@RequestBody EquipmentDTO dto) {
-        EquipmentDTO created = service.create(dto);
+    public ResponseEntity<EquipmentResponseDTO> create(@RequestBody EquipmentCreationDTO dto) {
+        EquipmentResponseDTO created = service.create(dto);
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
-    public ResponseEntity<EquipmentDTO> update(@PathVariable Long id, @RequestBody EquipmentDTO dto) {
-        EquipmentDTO updated = service.update(id, dto);
+    public ResponseEntity<EquipmentResponseDTO> update(@PathVariable Long id, @RequestBody EquipmentResponseDTO dto) {
+        EquipmentResponseDTO updated = service.update(id, dto);
         return ResponseEntity.ok(updated);
     }
 
@@ -57,8 +58,8 @@ public class EquipmentController {
 
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<List<EquipmentDTO>> filter(@RequestBody EquipmentFilterDTO filter) {
-        List<EquipmentDTO> filteredList = service.filter(filter);
+    public ResponseEntity<List<EquipmentResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter) {
+        List<EquipmentResponseDTO> filteredList = service.filter(filter);
         if (filteredList.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
