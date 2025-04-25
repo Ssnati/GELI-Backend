@@ -2,7 +2,10 @@ package com.edu.uptc.gelibackend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -40,8 +43,10 @@ public class EquipmentEntity {
     private Boolean availability;
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<EquipmentFunctionsEntity> equipmentFunctions;
 
-//    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments;
+    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments;
 }

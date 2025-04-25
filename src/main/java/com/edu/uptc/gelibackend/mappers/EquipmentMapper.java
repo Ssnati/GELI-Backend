@@ -15,6 +15,7 @@ public class EquipmentMapper {
 
     private final LaboratoryMapper laboratoryMapper;
     private final FunctionMapper functionMapper;
+    private final UserMapper userMapper;
 
 
     public EquipmentEntity toEntity(EquipmentResponseDTO equipmentDTO) {
@@ -36,6 +37,7 @@ public class EquipmentMapper {
         equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         equipmentResponseDTO.setLaboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()));
         equipmentResponseDTO.setFunctions(functionMapper.toDTOs(equipmentEntity.getEquipmentFunctions()));
+        equipmentResponseDTO.setAuthorizedUsers(userMapper.toResponseDTOs(equipmentEntity.getAuthorizedUsersEquipments()));
         equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
         return equipmentResponseDTO;
     }

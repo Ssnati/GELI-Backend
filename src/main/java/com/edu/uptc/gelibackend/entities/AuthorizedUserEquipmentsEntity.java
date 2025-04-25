@@ -3,10 +3,9 @@ package com.edu.uptc.gelibackend.entities;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "authorized_user_equipments")
@@ -24,7 +23,7 @@ public class AuthorizedUserEquipmentsEntity {
     // - @MapsId("userId") liga este campo a la parte userId de la PK
     // - FK en columna "user_id"
     @MapsId("userId")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
@@ -32,7 +31,7 @@ public class AuthorizedUserEquipmentsEntity {
     // - @MapsId("equipmentId") liga este campo a la parte equipmentId de la PK
     // - FK en columna "equipment_id"
     @MapsId("equipmentId")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "equipment_id", nullable = false)
     private EquipmentEntity equipment;
 
@@ -40,4 +39,8 @@ public class AuthorizedUserEquipmentsEntity {
     @NotNull
     @Column(name = "actual_status", nullable = false)
     private Boolean actualStatus;
+
+    @OneToMany(mappedBy = "authorizedUserEquipments", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<EquipmentAuthorizationHistoryEntity> equipmentAuthorizationHistory;
 }

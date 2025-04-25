@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.mappers;
 
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
+import com.edu.uptc.gelibackend.entities.AuthorizedUserEquipmentsEntity;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Component;
@@ -88,5 +89,12 @@ public class UserMapper {
         userResponseDTO.setIdentification(dto.getIdentification());
         userResponseDTO.setRole((dto.getRole()));
         return userResponseDTO;
+    }
+
+    public List<UserResponseDTO> toResponseDTOs(List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments) {
+        return authorizedUsersEquipments.stream()
+                .map(authorizedUserEquipmentsEntity ->
+                        this.completeDTOWithEntity(new UserResponseDTO(), authorizedUserEquipmentsEntity.getUser()))
+                .toList();
     }
 }

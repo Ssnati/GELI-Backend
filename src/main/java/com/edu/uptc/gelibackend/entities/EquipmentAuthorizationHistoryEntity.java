@@ -23,7 +23,7 @@ public class EquipmentAuthorizationHistoryEntity {
     // PK propia para el historial
 
     // FK compuesta hacia la entidad intermedia:
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             @JoinColumn(name = "equipment_id", referencedColumnName = "equipment_id")

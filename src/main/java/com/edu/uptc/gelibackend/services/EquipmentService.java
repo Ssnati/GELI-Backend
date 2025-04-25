@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.entities.*;
+import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
 import com.edu.uptc.gelibackend.mappers.FunctionMapper;
 import com.edu.uptc.gelibackend.repositories.*;
@@ -54,10 +55,9 @@ public class EquipmentService {
         EquipmentEntity equipment = mapper.toEntity(dto);
         equipment.setLaboratory(this.findLaboratoryById(dto.getLaboratoryId()));
         this.setFunctionsToEquipment(equipment, this.findFunctionsByIds(dto.getFunctions()));
+        this.setUsersToEquipment(equipment, this.findUsersByIds(dto.getAuthorizedUsersIds()));
 
         EquipmentEntity save = equipmentRepo.save(equipment);
-        this.setUsersToEquipment(save, this.findUsersByIds(dto.getAuthorizedUsersIds()));
-
         return mapper.toResponseDTO(save);
     }
 
@@ -65,6 +65,7 @@ public class EquipmentService {
         // Crear los registros de AuthorizedUserEquipmentsEntity
         List<AuthorizedUserEquipmentsEntity> equipmentAuthorizedUsers = userEntities.stream()
                 .map(user -> AuthorizedUserEquipmentsEntity.builder()
+                        .id(new AuthorizedUserEquipmentsId())
                         .actualStatus(true)
                         .equipment(equipment)
                         .user(user)
@@ -78,6 +79,11 @@ public class EquipmentService {
                         .authorizationStatusToDate(true)
                         .build())
                 .toList();
+        // Guardar los registros de AuthorizedUserEquipmentsEntity
+        equipment.setAuthorizedUsersEquipments(equipmentAuthorizedUsers);
+        // Guardar el historial de cambios
+        equipmentAuthorizedUsers.forEach(equipmentAuthorizedUser ->
+                equipmentAuthorizedUser.setEquipmentAuthorizationHistory(new ArrayList<>(history)));
     }
 
     private List<UserEntity> findUsersByIds(List<Long> authorizedUsersIds) {
@@ -88,6 +94,10 @@ public class EquipmentService {
     }
 
     private List<EquipmentFunctionsEntity> setFunctionsToEquipment(EquipmentEntity equipment, List<FunctionEntity> functions) {
+        if (functions == null || functions.isEmpty()) {
+            return List.of();
+        }
+
         List<EquipmentFunctionsEntity> equipmentFunctionsEntityList = functions.stream()
                 .map(function -> new EquipmentFunctionsEntity(new EquipmentFunctionsId(), equipment, function))
                 .toList();

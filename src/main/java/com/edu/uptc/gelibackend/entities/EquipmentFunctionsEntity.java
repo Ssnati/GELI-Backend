@@ -16,12 +16,12 @@ public class EquipmentFunctionsEntity {
     @EmbeddedId
     private EquipmentFunctionsId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("equipmentId") // mapea la parte equipmentId del EmbeddedId
     @JoinColumn(name = "id_equipment")
     private EquipmentEntity equipment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("functionId") // mapea la parte functionId del EmbeddedId
     @JoinColumn(name = "id_function")
     private FunctionEntity function;
