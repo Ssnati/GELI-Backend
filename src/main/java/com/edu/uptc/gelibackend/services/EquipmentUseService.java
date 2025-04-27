@@ -19,8 +19,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EquipmentUseService {
-
     private final EquipmentUseRepository equipmentUseRepo;
+
     private final UserRepository userRepo;
     private final EquipmentRepository equipmentRepo;
     private final ApplicantRepository applicantRepo;
@@ -120,5 +120,15 @@ public class EquipmentUseService {
             throw new IllegalArgumentException("Equipment use with ID " + id + " is already ended");
         }
         return equipmentUseEntity;
+    }
+
+    public List<EquipmentUseResponseDTO> getAllEquipmentUses() {
+        return equipmentUseRepo.findAll().stream()
+                .map(mapper::toResponseDTO)
+                .toList();
+    }
+
+    public Optional<EquipmentUseResponseDTO> getEquipmentUse(Long id) {
+        return equipmentUseRepo.findById(id).map(mapper::toResponseDTO);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,6 +30,20 @@ public class EquipmentUseController {
     @PutMapping("/{id}/end")
     public ResponseEntity<EquipmentUseResponseDTO> endEquipmentUse(@PathVariable Long id) {
         Optional<EquipmentUseResponseDTO> response = service.endEquipmentUse(id);
+        return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasAuthority('EQUIPMENT_USE_READ')")
+    @GetMapping()
+    public ResponseEntity<List<EquipmentUseResponseDTO>> getAllEquipmentUses() {
+        List<EquipmentUseResponseDTO> list = service.getAllEquipmentUses();
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+    }
+
+    @PreAuthorize("hasAuthority('EQUIPMENT_USE_READ')")
+    @GetMapping("/{id}")
+    public ResponseEntity<EquipmentUseResponseDTO> getEquipmentUse(@PathVariable Long id) {
+        Optional<EquipmentUseResponseDTO> response = service.getEquipmentUse(id);
         return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
