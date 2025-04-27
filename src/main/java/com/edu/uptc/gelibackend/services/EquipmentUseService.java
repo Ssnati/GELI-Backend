@@ -62,7 +62,7 @@ public class EquipmentUseService {
         assignFunctionsToEntity(entity, functionEntityList);
 
         entity.setUseDate(LocalDate.now());
-        entity.setStartTime(LocalTime.now());
+        entity.setStartUseTime(LocalTime.now());
 
         return entity;
     }
@@ -102,5 +102,23 @@ public class EquipmentUseService {
                 .map(function -> new EquipmentFunctionsUsedEntity(new EquipmentFunctionsUsedId(), entity, function))
                 .toList();
         entity.setEquipmentFunctionsUsedList(equipmentFunctionsUsedList);
+    }
+
+    public Optional<EquipmentUseResponseDTO> endEquipmentUse(Long id) {
+        EquipmentUseEntity equipmentUseEntity = validateEquipmentUseIsAlreadyStarted(id);
+
+        equipmentUseEntity.setEndUseTime(LocalTime.now());
+        equipmentUseRepo.save(equipmentUseEntity);
+
+        return Optional.of(mapper.toResponseDTO(equipmentUseEntity));
+    }
+
+    private EquipmentUseEntity validateEquipmentUseIsAlreadyStarted(Long id) {
+        EquipmentUseEntity equipmentUseEntity = equipmentUseRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Equipment use with ID " + id + " not found"));
+        if (equipmentUseEntity.getEndUseTime() != null) {
+            throw new IllegalArgumentException("Equipment use with ID " + id + " is already ended");
+        }
+        return equipmentUseEntity;
     }
 }

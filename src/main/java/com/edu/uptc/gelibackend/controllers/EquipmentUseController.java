@@ -6,10 +6,7 @@ import com.edu.uptc.gelibackend.services.EquipmentUseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -26,5 +23,12 @@ public class EquipmentUseController {
     public ResponseEntity<EquipmentUseResponseDTO> startEquipmentUse(@RequestBody EquipmentUseDTO equipmentUseDTO) {
         Optional<EquipmentUseResponseDTO> response = service.startEquipmentUse(equipmentUseDTO);
         return response.map(useDTO -> ResponseEntity.status(201).body(useDTO)).orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @PreAuthorize("hasAuthority('EQUIPMENT_USE_WRITE')")
+    @PutMapping("/{id}/end")
+    public ResponseEntity<EquipmentUseResponseDTO> endEquipmentUse(@PathVariable Long id) {
+        Optional<EquipmentUseResponseDTO> response = service.endEquipmentUse(id);
+        return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

@@ -23,6 +23,6 @@ public class EquipmentUseResponseDTO {
     private List<FunctionDTO> usedFunctions;
     private String observations;
     private LocalDate useDate;
-    private LocalTime startTime;
-    private Long duration;
+    private LocalTime startUseTime;
+    private LocalTime endUseTime;
 }

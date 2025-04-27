@@ -35,8 +35,8 @@ public class EquipmentUseMapper {
                 .samplesNumber(equipmentUseEntity.getSamplesNumber())
                 .observations(equipmentUseEntity.getObservations())
                 .useDate(equipmentUseEntity.getUseDate())
-                .startTime(equipmentUseEntity.getStartTime())
-                .duration(equipmentUseEntity.getDuration())
+                .startUseTime(equipmentUseEntity.getStartUseTime())
+                .endUseTime(equipmentUseEntity.getEndUseTime())
                 .build();
     }
 

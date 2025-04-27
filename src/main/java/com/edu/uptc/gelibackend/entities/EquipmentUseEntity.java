@@ -18,14 +18,14 @@ public class EquipmentUseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     private EquipmentEntity equipment;
 
     @ManyToOne
     private UserEntity user;
     private LocalDate useDate;
-    private LocalTime startTime;
-    private Long duration;
+    private LocalTime startUseTime;
+    private LocalTime endUseTime;
     private Boolean status;
     private int samplesNumber;
     
