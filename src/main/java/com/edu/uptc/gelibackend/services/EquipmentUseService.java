@@ -2,21 +2,18 @@ package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
-import com.edu.uptc.gelibackend.entities.ApplicantEntity;
-import com.edu.uptc.gelibackend.entities.EquipmentEntity;
-import com.edu.uptc.gelibackend.entities.EquipmentUseEntity;
-import com.edu.uptc.gelibackend.entities.UserEntity;
+import com.edu.uptc.gelibackend.entities.*;
+import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsUsedId;
 import com.edu.uptc.gelibackend.mappers.EquipmentUseMapper;
-import com.edu.uptc.gelibackend.repositories.ApplicantRepository;
-import com.edu.uptc.gelibackend.repositories.EquipmentRepository;
-import com.edu.uptc.gelibackend.repositories.EquipmentUseRepository;
-import com.edu.uptc.gelibackend.repositories.UserRepository;
+import com.edu.uptc.gelibackend.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,6 +24,7 @@ public class EquipmentUseService {
     private final UserRepository userRepo;
     private final EquipmentRepository equipmentRepo;
     private final ApplicantRepository applicantRepo;
+    private final FunctionRepository functionRepo;
     private final EquipmentUseMapper mapper;
 
     @Transactional
@@ -56,8 +54,13 @@ public class EquipmentUseService {
         EquipmentUseEntity entity = mapper.toEntity(equipmentUseDTO);
 
         entity.setUser(findUserById(equipmentUseDTO.getUserId()));
-        entity.setEquipment(findEquipmentById(equipmentUseDTO.getEquipmentId()));
+        EquipmentEntity equipmentEntity = findEquipmentById(equipmentUseDTO.getEquipmentId());
+        entity.setEquipment(equipmentEntity);
         entity.setApplicant(findApplicantById(equipmentUseDTO.getApplicantId()));
+
+        List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentUseDTO, equipmentEntity);
+        assignFunctionsToEntity(entity, functionEntityList);
+
         entity.setUseDate(LocalDate.now());
         entity.setStartTime(LocalTime.now());
 
@@ -74,5 +77,30 @@ public class EquipmentUseService {
 
     private ApplicantEntity findApplicantById(Long applicantId) {
         return applicantRepo.findById(applicantId).orElseThrow(() -> new IllegalArgumentException("Applicant with ID " + applicantId + " not found"));
+    }
+
+    private List<FunctionEntity> findFunctionById(List<Long> usedFunctions) {
+        return functionRepo.findAllById(usedFunctions);
+    }
+
+    private List<FunctionEntity> validateEquipmentUsedFunctions(EquipmentUseDTO equipmentUseDTO, EquipmentEntity entity) {
+        List<FunctionEntity> equipmentFunctions = entity.getEquipmentFunctions().stream()
+                .map(EquipmentFunctionsEntity::getFunction)
+                .toList();
+        List<Long> requestedFunctionsId = equipmentUseDTO.getUsedFunctions();
+        List<FunctionEntity> functionEntityList = findFunctionById(requestedFunctionsId);
+        for (FunctionEntity function : functionEntityList) {
+            if (equipmentFunctions.stream().noneMatch(equipmentFunction -> Objects.equals(equipmentFunction.getId(), function.getId()))) {
+                throw new IllegalArgumentException("The function " + function.getFunctionName() + " is not available for this equipment");
+            }
+        }
+        return functionEntityList;
+    }
+
+    private void assignFunctionsToEntity(EquipmentUseEntity entity, List<FunctionEntity> functionEntityList) {
+        List<EquipmentFunctionsUsedEntity> equipmentFunctionsUsedList = functionEntityList.stream()
+                .map(function -> new EquipmentFunctionsUsedEntity(new EquipmentFunctionsUsedId(), entity, function))
+                .toList();
+        entity.setEquipmentFunctionsUsedList(equipmentFunctionsUsedList);
     }
 }

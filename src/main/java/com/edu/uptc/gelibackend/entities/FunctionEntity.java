@@ -28,4 +28,8 @@ public class FunctionEntity {
     @OneToMany(mappedBy = "function", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<EquipmentFunctionsEntity> equipmentFunctions;
+
+    @OneToMany(mappedBy = "function", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<EquipmentFunctionsUsedEntity> equipmentFunctionsUsedList;
 }

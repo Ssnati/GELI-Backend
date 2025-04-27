@@ -1,13 +1,11 @@
 package com.edu.uptc.gelibackend.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -30,6 +28,11 @@ public class EquipmentUseEntity {
     private Long duration;
     private Boolean status;
     private int samplesNumber;
+    
+    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<EquipmentFunctionsUsedEntity> equipmentFunctionsUsedList;
+    
     @ManyToOne
     @JoinColumn(name = "applicant_id", nullable = false)
     private ApplicantEntity applicant;

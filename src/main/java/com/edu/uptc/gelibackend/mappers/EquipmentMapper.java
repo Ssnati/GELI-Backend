@@ -3,11 +3,8 @@ package com.edu.uptc.gelibackend.mappers;
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
-import com.edu.uptc.gelibackend.entities.EquipmentFunctionsEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +33,7 @@ public class EquipmentMapper {
         equipmentResponseDTO.setBrand(equipmentEntity.getBrand());
         equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         equipmentResponseDTO.setLaboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()));
-        equipmentResponseDTO.setFunctions(functionMapper.toDTOs(equipmentEntity.getEquipmentFunctions()));
+        equipmentResponseDTO.setFunctions(functionMapper.equipmentFunctionsToDTOs(equipmentEntity.getEquipmentFunctions()));
         equipmentResponseDTO.setAuthorizedUsers(userMapper.toResponseDTOs(equipmentEntity.getAuthorizedUsersEquipments()));
         equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
         return equipmentResponseDTO;
