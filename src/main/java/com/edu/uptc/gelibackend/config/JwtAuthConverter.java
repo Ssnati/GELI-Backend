@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.config;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Component
 @Slf4j
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+
     private static final String ROLE_PREFIX = "ROLE_";
     private static final String REALM_ACCESS_CLAIM = "realm_access";
     private static final String RESOURCE_ACCESS_CLAIM = "resource_access";
@@ -32,7 +34,6 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
     @Value("${jwt.auth.converter.resource-id-claim}")
     private String resourceIdClaimName;
-
 
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
@@ -52,10 +53,14 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
     private Collection<? extends GrantedAuthority> extractRealmRoles(Jwt jwt) {
         Map<String, Object> realmAccess = jwt.getClaimAsMap(REALM_ACCESS_CLAIM);
-        if (realmAccess == null) return List.of();
+        if (realmAccess == null) {
+            return List.of();
+        }
 
         Object roles = realmAccess.get(ROLES_CLAIM);
-        if (!(roles instanceof Collection<?> rolesCollection)) return List.of();
+        if (!(roles instanceof Collection<?> rolesCollection)) {
+            return List.of();
+        }
 
         return rolesCollection.stream()
                 .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -50,4 +52,12 @@ public class UserEntity {
     @NotNull
     @Column(name = "create_date_user", nullable = false)
     private LocalDate createDateUser;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<UserStatusHistoryEntity> statusHistory = new ArrayList<>();
 }

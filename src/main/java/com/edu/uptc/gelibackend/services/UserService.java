@@ -10,9 +10,14 @@ import com.edu.uptc.gelibackend.repositories.UserRepository;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.repositories.UserStatusHistoryRepository;
 import com.edu.uptc.gelibackend.specifications.UserSpecification;
+import com.edu.uptc.gelibackend.utils.KeyCloakUtils;
+
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,37 +65,44 @@ public class UserService {
         return Optional.empty();
     }
 
+    public boolean existsByEmail(String email) {
+        return userRepo.findByEmail(email) != null;
+    }
+
     @Transactional
     public UserResponseDTO createUser(UserCreationDTO userCreationDTO) {
         validateUniqueEmail(userCreationDTO);
         validateUniqueIdentificationNumber(userCreationDTO);
-        UserResponseDTO userResponseDTO = mapper.mapCreationDTOToResponseDTO(userCreationDTO);
 
+        UserResponseDTO userResponseDTO = mapper.mapCreationDTOToResponseDTO(userCreationDTO);
         String userId = null;
+        String generatedPassword = generateRandomPassword();
+
         try {
-            // Crear el usuario en Keycloak
-            Response response = createUserInKeycloak(userCreationDTO);
+            // Crear usuario en Keycloak con contraseña inicial
+            Response response = createUserInKeycloak(userCreationDTO, generatedPassword);
             userId = extractUserIdFromResponse(response);
 
-            // Assign role to user
+            // Asignar rol en Keycloak
             keyCloakUserService.assignRealmRoleToUser(userId, userCreationDTO.getRole());
 
-            // Build the UserResponseDTO
+            // Mapear y guardar en base de datos local
             UserRepresentation userRepresentation = keyCloakUserService.getById(userId);
-
-            // Map the Keycloak user representation to the UserResponseDTO
             userResponseDTO.setRole(userCreationDTO.getRole());
+
             UserEntity entity = saveUserInDatabase(mapper.completeDTOWithRepresentation(userResponseDTO, userRepresentation));
             userResponseDTO.setId(entity.getId());
 
-            // Save the user status history
+            // Guardar historial de estado
             UserStatusHistoryEntity statusHistory = saveUserRoleHistoryInDatabase(entity);
             userResponseDTO.setModificationStatusDate(statusHistory.getModificationStatusDate());
+
+            // Enviar correo de bienvenida
+            sendWelcomeEmail(userCreationDTO.getEmail(), generatedPassword);
 
             return userResponseDTO;
 
         } catch (Exception e) {
-            // Si ocurre un error, eliminar el usuario de Keycloak si ya fue creado
             if (userId != null) {
                 keyCloakUserService.deleteUser(userId);
             }
@@ -98,20 +110,48 @@ public class UserService {
         }
     }
 
-    private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
-        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
-        return mapper.completeDTOWithEntity(dto, userEntity);
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString()
+                .replace("-", "")
+                .substring(0, 10)
+                .toUpperCase(); // Ej: "AB12CD34EF"
     }
 
-    private Response createUserInKeycloak(UserCreationDTO userCreationDTO) {
+    private Response createUserInKeycloak(UserCreationDTO userCreationDTO, String password) {
         try {
             UserRepresentation userRepresentation = mapper.mapCreationDTOToRepresentation(userCreationDTO);
             userRepresentation.setEnabled(true);
             userRepresentation.setUsername(userCreationDTO.getEmail().split("@")[0]);
+            userRepresentation.setCredentials(List.of(KeyCloakUtils.createPasswordCredential(password)));
             return keyCloakUserService.createUser(userRepresentation);
         } catch (Exception e) {
             throw new RuntimeException("Error creating user in Keycloak", e);
         }
+    }
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    private void sendWelcomeEmail(String toEmail, String password) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Bienvenido a GELI - Credenciales de acceso");
+
+        message.setText(
+                "¡Bienvenido a GELI!\n\n"
+                + "Tu cuenta ha sido creada exitosamente.\n"
+                + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
+                + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
+                + "Saludos,\n"
+                + "Equipo GELI"
+        );
+
+        mailSender.send(message);
+    }
+
+    private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
+        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
+        return mapper.completeDTOWithEntity(dto, userEntity);
     }
 
     private String extractUserIdFromResponse(Response response) {
@@ -161,7 +201,6 @@ public class UserService {
     @Transactional
     public UserResponseDTO updateUser(Long id, UserUpdateDTO updateDTO) {
         validateEmptyFields(updateDTO);
-
 
         Optional<UserEntity> optional = userRepo.findById(id);
         if (optional.isEmpty()) {
@@ -223,19 +262,33 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> filter(UserFilterDTO filter) {
+        // 1. Aplica la especificación y trae las entidades de usuario
         Specification<UserEntity> spec = userSpecification.build(filter);
         List<UserEntity> userEntities = userRepo.findAll(spec);
+
+        // 2. Obtén también todos los usuarios de Keycloak para mapear atributos comunes
         List<UserRepresentation> keycloakUsers = keyCloakUserService.getAllUsers();
-
         Map<String, UserRepresentation> usersMap = keycloakUsers.stream()
-                .collect(Collectors.toMap(UserRepresentation::getId, user -> user));
+                .collect(Collectors.toMap(UserRepresentation::getId, u -> u));
 
+        // 3. Por cada usuario filtrado, arma el DTO y añade la fecha de modificación más reciente
         return userEntities.stream()
                 .map(userEntity -> {
-                    UserRepresentation userRepresentation = usersMap.get(userEntity.getKeycloakId());
-                    return mergeEntityWithRepresentationInDTO(userEntity, userRepresentation);
+                    UserRepresentation rep = usersMap.get(userEntity.getKeycloakId());
+                    UserResponseDTO dto = mergeEntityWithRepresentationInDTO(userEntity, rep);
+
+                    // Aquí viene el cambio clave:
+                    // Busca el registro de historial más reciente para este user
+                    UserStatusHistoryEntity latest = historyRepo
+                            .findFirstByUserIdOrderByModificationStatusDateDesc(userEntity.getId());
+                    if (latest != null) {
+                        dto.setModificationStatusDate(latest.getModificationStatusDate());
+                    }
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 }

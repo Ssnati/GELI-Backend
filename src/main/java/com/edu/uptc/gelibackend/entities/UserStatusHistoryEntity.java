@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Table(name = "status_history")
 public class UserStatusHistoryEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

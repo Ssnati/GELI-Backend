@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "function")
+@Table(name = "`function`")
 public class FunctionEntity {
 
     @Id

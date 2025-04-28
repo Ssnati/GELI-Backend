@@ -93,8 +93,8 @@ public class UserMapper {
 
     public List<UserResponseDTO> toResponseDTOs(List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments) {
         return authorizedUsersEquipments.stream()
-                .map(authorizedUserEquipmentsEntity ->
-                        this.completeDTOWithEntity(new UserResponseDTO(), authorizedUserEquipmentsEntity.getUser()))
+                .map(authorizedUserEquipmentsEntity
+                        -> this.completeDTOWithEntity(new UserResponseDTO(), authorizedUserEquipmentsEntity.getUser()))
                 .toList();
     }
 }

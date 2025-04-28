@@ -35,6 +35,13 @@ public class UsersController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/exists-by-email")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<Boolean> existsByEmail(@RequestParam String email) {
+        boolean exists = userService.existsByEmail(email);
+        return ResponseEntity.ok(exists);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('USER_WRITE')")
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserCreationDTO user) {
