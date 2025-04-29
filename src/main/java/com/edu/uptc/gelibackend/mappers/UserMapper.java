@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.entities.AuthorizedUserEquipmentsEntity;
 import com.edu.uptc.gelibackend.entities.UserEntity;
+import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,10 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
+
+    private final AuthorizedUserEquipmentsMapper userEquipmentsMapper;
 
     public UserEntity mapResponseDTOToEntity(UserResponseDTO dto) {
         UserEntity entity = new UserEntity();
@@ -51,6 +55,7 @@ public class UserMapper {
         dto.setEnabledStatus(entity.getState());
         dto.setRole(entity.getRole());
         dto.setCreationDate(entity.getCreateDateUser());
+        dto.setAuthorizedUserEquipments(userEquipmentsMapper.toAuthorizedEquipmentDTOs(entity.getAuthorizedUserEquipments()));
         return dto;
     }
 

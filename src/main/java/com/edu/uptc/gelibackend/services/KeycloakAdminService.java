@@ -24,8 +24,7 @@ public class KeycloakAdminService {
     @Value("${keycloak.client-id}")
     private String clientId;
 
-    @Value("${keycloak.client-secret}")
-    private String clientSecret;
+    private String clientSecret = System.getenv("CLIENT_SECRET");
 
     public KeycloakAdminService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;

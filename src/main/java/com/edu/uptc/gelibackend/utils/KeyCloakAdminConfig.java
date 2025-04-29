@@ -18,8 +18,8 @@ public class KeyCloakAdminConfig {
     @Value("${keycloak.realm}")
     private String REALM;
     @Value("${keycloak.realm.client}")
-    private String CLIENT_ID = "geli-backend";
-    private final String CLIENT_SECRET = "Wpo1fuXEWVujnNBuB6PCTrQpEmQemPy8";
+    private String CLIENT_ID;
+    private final String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
 
     @Bean
     public Keycloak KeyCloakAdminClient() {

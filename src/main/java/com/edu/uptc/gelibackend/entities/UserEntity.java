@@ -65,4 +65,8 @@ public class UserEntity {
             fetch = FetchType.LAZY
     )
     private List<UserStatusHistoryEntity> statusHistory = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private List<AuthorizedUserEquipmentsEntity> authorizedUserEquipments;
 }

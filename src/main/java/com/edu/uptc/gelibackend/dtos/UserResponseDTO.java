@@ -23,4 +23,5 @@ public class UserResponseDTO {
     private LocalDate modificationStatusDate;
     private LocalDate creationDate;
     private PositionDTO position;
+    private List<AuthorizedEquipmentDTO> authorizedUserEquipments;
 }

@@ -67,7 +67,9 @@ public class UserSpecification extends BaseSpecification<UserEntity, UserFilterD
             spec = spec.and((root, query, cb) -> {
                 Subquery<LocalDate> sq = query.subquery(LocalDate.class);
                 Root<UserStatusHistoryEntity> hist = sq.from(UserStatusHistoryEntity.class);
-                sq.select(cb.greatest(hist.get("modificationStatusDate")));
+
+                // Explicitly cast the path to LocalDate
+                sq.select(cb.greatest(hist.<LocalDate>get("modificationStatusDate")));
                 sq.where(cb.equal(hist.get("user"), root));
 
                 Predicate datePred = cb.conjunction();  // ← usa Predicate de jakarta.persistence.criteria
