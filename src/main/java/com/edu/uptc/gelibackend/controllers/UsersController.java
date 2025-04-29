@@ -62,10 +62,10 @@ public class UsersController {
     @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('USER_WRITE')")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
-            @RequestBody UserUpdateDTO user
+            @RequestBody UserUpdateDTO dto
     ) {
-        UserResponseDTO updatedUser = userService.updateUser(id, user);
-        return ResponseEntity.ok(updatedUser);
+        UserResponseDTO updated = userService.updateUser(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/filter")
