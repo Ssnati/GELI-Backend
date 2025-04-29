@@ -44,7 +44,6 @@ public class KeyCloakUserService {
         }
     }
 
-
     public Response createUser(UserRepresentation userRepresentation) {
         userRepresentation.setEnabled(true);
         userRepresentation.setEmailVerified(true);
@@ -109,7 +108,7 @@ public class KeyCloakUserService {
                 .list()
                 .stream()
                 .filter(role -> newRoles.stream()
-                        .anyMatch(roleName -> roleName.equalsIgnoreCase(role.getName())))
+                .anyMatch(roleName -> roleName.equalsIgnoreCase(role.getName())))
                 .toList());
         roles.addAll(defaultRoles);
 

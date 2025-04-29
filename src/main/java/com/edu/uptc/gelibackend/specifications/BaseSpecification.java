@@ -11,5 +11,6 @@ public abstract class BaseSpecification<T, F extends BaseFilterDTO> {
         return spec;
     }
 
+    // Método abstracto que cada clase hija debe implementar para aplicar filtros
     protected abstract Specification<T> addFilters(Specification<T> spec, F filter);
 }

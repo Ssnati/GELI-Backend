@@ -2,17 +2,17 @@ package com.edu.uptc.gelibackend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
 
     @Id
@@ -50,4 +50,19 @@ public class UserEntity {
     @NotNull
     @Column(name = "create_date_user", nullable = false)
     private LocalDate createDateUser;
+
+    /**
+     * Many users → one position
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "position_id", nullable = false)
+    private Position position;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<UserStatusHistoryEntity> statusHistory = new ArrayList<>();
 }

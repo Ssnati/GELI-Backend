@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponseDTO {
+
     private Long id; //registro del cambio de estado -> inactivo o activo
     private String keycloakId; // id de keycloak -> user, correo, los roles, permiso
     private String firstName;
