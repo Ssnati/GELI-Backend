@@ -1,5 +1,6 @@
 package com.edu.uptc.gelibackend.services;
 
+import com.edu.uptc.gelibackend.dtos.PositionDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
@@ -54,18 +55,24 @@ public class UserService {
         return userResponseDTOs;
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findById(Long id) {
-        Optional<UserEntity> optional = userRepo.findById(id);
-        if (optional.isPresent()) {
-            UserEntity entity = optional.get();
-            UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
-            UserStatusHistoryEntity statusDateDesc = historyRepo.findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
-            if (statusDateDesc != null) {
-                dto.setModificationStatusDate(statusDateDesc.getModificationStatusDate());
-            }
-            return Optional.of(dto);
-        }
-        return Optional.empty();
+        return userRepo.findById(id) // o findByIdWithPosition
+                .map(entity -> {
+                    UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
+
+                    // mapeo manual de Position
+                    Position pos = entity.getPosition();
+                    dto.setPosition(new PositionDTO(pos.getId(), pos.getName()));
+
+                    // el resto de tu lógica de statusHistory…
+                    UserStatusHistoryEntity statusDateDesc
+                            = historyRepo.findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
+                    if (statusDateDesc != null) {
+                        dto.setModificationStatusDate(statusDateDesc.getModificationStatusDate());
+                    }
+                    return dto;
+                });
     }
 
     public boolean existsByEmail(String email) {

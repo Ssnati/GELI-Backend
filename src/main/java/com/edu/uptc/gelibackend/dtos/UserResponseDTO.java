@@ -22,4 +22,5 @@ public class UserResponseDTO {
     private String role;
     private LocalDate modificationStatusDate;
     private LocalDate creationDate;
+    private PositionDTO position;
 }
