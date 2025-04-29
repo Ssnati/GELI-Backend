@@ -14,4 +14,6 @@ public class UserCreationDTO {
     private String lastName;
     private String identification;
     private String role;
+    private Long positionId;
+    private String positionName;
 }
