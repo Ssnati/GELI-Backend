@@ -23,4 +23,5 @@ public class UserFilterDTO implements BaseFilterDTO {
     private LocalDate modificationStatusDateTo;
     private LocalDate creationDateFrom;
     private LocalDate creationDateTo;
+    private Long positionId;
 }

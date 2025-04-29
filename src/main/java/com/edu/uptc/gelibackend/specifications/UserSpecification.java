@@ -83,6 +83,11 @@ public class UserSpecification extends BaseSpecification<UserEntity, UserFilterD
             });
         }
 
+        if (filter.getPositionId() != null) {
+            spec = spec.and((root, query, cb)
+                    -> cb.equal(root.get("position").get("id"), filter.getPositionId()));
+        }
+
         return spec;
     }
 }

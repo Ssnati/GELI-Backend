@@ -45,18 +45,30 @@ public class UserService {
     private final UserPositionHistoryRepository positionHistoryRepo;
 
     public List<UserResponseDTO> findAll() {
-        List<UserEntity> userEntities = userRepo.findAll(); // -> api -> consultan todos los usuarios de la base de datos
+        List<UserEntity> userEntities = userRepo.findAll(); // asegúrate que esté con @EntityGraph para traer position
         List<UserStatusHistoryEntity> historyEntities = historyRepo.findAll();
 
-        List<UserResponseDTO> userResponseDTOs = userEntities.stream()
-                .map(entity -> mapper.completeDTOWithEntity(new UserResponseDTO(), entity))
-                .toList();
+        return userEntities.stream()
+                .map(entity -> {
+                    UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
 
-        userResponseDTOs.forEach(dto -> historyEntities.stream()
-                .filter(history -> history.getUser().getId().equals(dto.getId()))
-                .max(Comparator.comparing(UserStatusHistoryEntity::getModificationStatusDate))
-                .ifPresent(history -> dto.setModificationStatusDate(history.getModificationStatusDate())));
-        return userResponseDTOs;
+                    // Agregar posición
+                    if (entity.getPosition() != null) {
+                        dto.setPosition(new PositionDTO(
+                                entity.getPosition().getId(),
+                                entity.getPosition().getName()
+                        ));
+                    }
+
+                    // Agregar modificación de estado
+                    historyEntities.stream()
+                            .filter(h -> h.getUser().getId().equals(dto.getId()))
+                            .max(Comparator.comparing(UserStatusHistoryEntity::getModificationStatusDate))
+                            .ifPresent(h -> dto.setModificationStatusDate(h.getModificationStatusDate()));
+
+                    return dto;
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -354,6 +366,14 @@ public class UserService {
                 .map(userEntity -> {
                     UserRepresentation rep = usersMap.get(userEntity.getKeycloakId());
                     UserResponseDTO dto = mergeEntityWithRepresentationInDTO(userEntity, rep);
+
+                    // Agregar posición
+                    if (userEntity.getPosition() != null) {
+                        dto.setPosition(new PositionDTO(
+                                userEntity.getPosition().getId(),
+                                userEntity.getPosition().getName()
+                        ));
+                    }
 
                     // Aquí viene el cambio clave:
                     // Busca el registro de historial más reciente para este user
