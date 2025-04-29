@@ -1,7 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.PositionDTO;
-import com.edu.uptc.gelibackend.entities.Position;
+import com.edu.uptc.gelibackend.entities.PositionEntity;
 import com.edu.uptc.gelibackend.mappers.PositionMapper;
 import com.edu.uptc.gelibackend.repositories.PositionRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +33,8 @@ public class PositionService {
         if (positionRepo.existsByNameIgnoreCase(dto.getName())) {
             throw new RuntimeException("Position already exists: " + dto.getName());
         }
-        Position entity = mapper.toEntity(dto);
-        Position saved = positionRepo.save(entity);
+        PositionEntity entity = mapper.toEntity(dto);
+        PositionEntity saved = positionRepo.save(entity);
         return mapper.toDto(saved);
     }
 }

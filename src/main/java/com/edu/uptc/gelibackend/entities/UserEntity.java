@@ -56,7 +56,7 @@ public class UserEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "position_id", nullable = false)
-    private Position position;
+    private PositionEntity position;
 
     @OneToMany(
             mappedBy = "user",

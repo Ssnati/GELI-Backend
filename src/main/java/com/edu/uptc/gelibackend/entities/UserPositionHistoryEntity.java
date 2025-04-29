@@ -28,14 +28,14 @@ public class UserPositionHistoryEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "old_position_id")
-    private Position oldPosition;
+    private PositionEntity oldPosition;
 
     /**
      * Cargo nuevo
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "new_position_id", nullable = false)
-    private Position newPosition;
+    private PositionEntity newPosition;
 
     /**
      * Fecha del cambio

@@ -5,7 +5,7 @@ import com.edu.uptc.gelibackend.dtos.PositionHistoryDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
-import com.edu.uptc.gelibackend.entities.Position;
+import com.edu.uptc.gelibackend.entities.PositionEntity;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import com.edu.uptc.gelibackend.entities.UserPositionHistoryEntity;
 import com.edu.uptc.gelibackend.entities.UserStatusHistoryEntity;
@@ -66,7 +66,7 @@ public class UserService {
                     UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
 
                     // mapeo manual de Position
-                    Position pos = entity.getPosition();
+                    PositionEntity pos = entity.getPosition();
                     dto.setPosition(new PositionDTO(pos.getId(), pos.getName()));
 
                     // el resto de tu lógica de statusHistory…
@@ -96,7 +96,7 @@ public class UserService {
 
         try {
             // ── POSITION LOGIC ──────────────────────────────────────
-            Position position;
+            PositionEntity position;
             if (dto.getPositionId() != null) {
                 position = positionRepo.findById(dto.getPositionId())
                         .orElseThrow(() -> new RuntimeException(
@@ -106,7 +106,7 @@ public class UserService {
                 position = positionRepo.findByNameIgnoreCase(name)
                         .orElseGet(() -> {
                             // create the new Position if it doesn’t exist
-                            Position newPos = new Position();
+                            PositionEntity newPos = new PositionEntity();
                             newPos.setName(name);
                             return positionRepo.save(newPos);
                         });
@@ -266,15 +266,15 @@ public class UserService {
         UserPositionHistoryEntity posHistory = null;
         if (dto.getPositionId() != null || dto.getPositionName() != null) {
             // guarda el cargo anterior
-            Position oldPos = user.getPosition();
+            PositionEntity oldPos = user.getPosition();
 
             // obtiene o crea el nuevo cargo
-            Position newPos;
+            PositionEntity newPos;
             if (dto.getPositionId() != null) {
                 newPos = positionRepo.findById(dto.getPositionId())
                         .orElseThrow(() -> new RuntimeException("Cargo no encontrado"));
             } else {
-                newPos = new Position();
+                newPos = new PositionEntity();
                 newPos.setName(dto.getPositionName());
                 newPos = positionRepo.save(newPos);
             }
@@ -369,21 +369,45 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findUserByEmail(String email) {
-        // Buscar en BD
         UserEntity entity = userRepo.findByEmail(email);
         if (entity == null) {
             return Optional.empty();
         }
-        // Traer datos de Keycloak
-        UserRepresentation rep = keyCloakUserService.getById(entity.getKeycloakId());
-        // Mapear entidad + representación a DTO
-        UserResponseDTO dto = mergeEntityWithRepresentationInDTO(entity, rep);
-        // Agregar fecha de última modificación de estado
+
+        UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
+
+        // Mapeo correcto del campo position
+        PositionEntity position = entity.getPosition();
+        if (position != null) {
+            dto.setPosition(new PositionDTO(position.getId(), position.getName()));
+        }
+
+        // Obtener el historial completo de cambios de posición
+        List<UserPositionHistoryEntity> positionHistories
+                = positionHistoryRepo.findByUserIdOrderByChangeDateDesc(entity.getId());
+
+        if (positionHistories != null) {
+            positionHistories.forEach(ph -> {
+                PositionHistoryDTO historyDTO = new PositionHistoryDTO(
+                        ph.getOldPosition() != null ? ph.getOldPosition().getName() : null,
+                        ph.getNewPosition().getName(),
+                        ph.getChangeDate()
+                );
+                dto.getPositionHistory().add(historyDTO);
+            });
+        }
+
+        // Cargar el historial de estado más reciente
         UserStatusHistoryEntity latest = historyRepo
                 .findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
         if (latest != null) {
             dto.setModificationStatusDate(latest.getModificationStatusDate());
         }
+
+        // Traer datos adicionales desde Keycloak
+        UserRepresentation rep = keyCloakUserService.getById(entity.getKeycloakId());
+        mapper.completeDTOWithRepresentation(dto, rep);
+
         return Optional.of(dto);
     }
 
