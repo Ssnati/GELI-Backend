@@ -1,5 +1,6 @@
 package com.edu.uptc.gelibackend.services;
 
+import com.edu.uptc.gelibackend.dtos.PositionDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
@@ -54,18 +55,24 @@ public class UserService {
         return userResponseDTOs;
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findById(Long id) {
-        Optional<UserEntity> optional = userRepo.findById(id);
-        if (optional.isPresent()) {
-            UserEntity entity = optional.get();
-            UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
-            UserStatusHistoryEntity statusDateDesc = historyRepo.findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
-            if (statusDateDesc != null) {
-                dto.setModificationStatusDate(statusDateDesc.getModificationStatusDate());
-            }
-            return Optional.of(dto);
-        }
-        return Optional.empty();
+        return userRepo.findById(id) // o findByIdWithPosition
+                .map(entity -> {
+                    UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
+
+                    // mapeo manual de Position
+                    Position pos = entity.getPosition();
+                    dto.setPosition(new PositionDTO(pos.getId(), pos.getName()));
+
+                    // el resto de tu lógica de statusHistory…
+                    UserStatusHistoryEntity statusDateDesc
+                            = historyRepo.findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
+                    if (statusDateDesc != null) {
+                        dto.setModificationStatusDate(statusDateDesc.getModificationStatusDate());
+                    }
+                    return dto;
+                });
     }
 
     public boolean existsByEmail(String email) {
@@ -241,61 +248,56 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO updateUser(Long id, UserUpdateDTO updateDTO) {
-        validateEmptyFields(updateDTO);
+    public UserResponseDTO updateUser(Long id, UserUpdateDTO dto) {
+        UserEntity user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Optional<UserEntity> optional = userRepo.findById(id);
-        if (optional.isEmpty()) {
-            throw new RuntimeException("User with ID " + id + " not found");
+        // ——— 1) Manejar cambio de estado ———
+        UserStatusHistoryEntity history = handleChangeStatus(dto, user);
+        if (history != null) {
+            historyRepo.save(history);
         }
 
-        UserEntity userEntity = optional.get();
-
-        // Obtener usuario de Keycloak
-        UserRepresentation keycloakUser = keyCloakUserService.getById(userEntity.getKeycloakId());
-        if (keycloakUser == null) {
-            throw new RuntimeException("Keycloak user not found");
+        // ——— 2) Manejar cambio de cargo ———
+        if (dto.getPositionId() != null || dto.getPositionName() != null) {
+            Position pos;
+            if (dto.getPositionId() != null) {
+                pos = positionRepo.findById(dto.getPositionId())
+                        .orElseThrow(() -> new RuntimeException("Cargo no encontrado"));
+            } else {
+                pos = new Position();
+                pos.setName(dto.getPositionName());
+                pos = positionRepo.save(pos);
+            }
+            user.setPosition(pos);
         }
 
-        // Manejar cambio de estado
-        UserStatusHistoryEntity statusHistory = handleChangeStatus(updateDTO, keycloakUser, userEntity);
+        // ——— 3) Persistir usuario y, si hubo cambio de estado, la historia ———
+        userRepo.save(user);
 
-        if (statusHistory == null) {
-            throw new RuntimeException("No changes detected in user status");
+        // ——— 4) Actualizar en Keycloak solo el isActive ———
+        UserRepresentation kc = keyCloakUserService.getById(user.getKeycloakId());
+        kc.setEnabled(dto.getIsActive());
+        keyCloakUserService.updateUser(kc);
+
+        // ——— 5) Devolver DTO completo ———
+        UserResponseDTO out = mapper.completeDTOWithEntity(new UserResponseDTO(), user);
+        if (history != null) {
+            out.setModificationStatusDate(history.getModificationStatusDate());
         }
-
-        try {
-            // Actualizar en local
-            userRepo.save(userEntity);
-
-            // Crear el nuevo registro de estado
-            historyRepo.save(statusHistory);
-
-            // Actualizar Keycloak
-            keyCloakUserService.updateUser(keycloakUser);
-
-            UserResponseDTO userResponseDTO = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
-            userResponseDTO.setModificationStatusDate(statusHistory.getModificationStatusDate());
-            return mapper.completeDTOWithEntity(userResponseDTO, userEntity);
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating user: " + e.getMessage(), e);
-        }
-
+        return out;
     }
 
-    private UserStatusHistoryEntity handleChangeStatus(UserUpdateDTO updateDTO, UserRepresentation keycloakUser, UserEntity existingEntity) {
-        if (updateDTO.getIsActive().equals(keycloakUser.isEnabled())) {
-            return null; // No hay cambios en el estado
+    private UserStatusHistoryEntity handleChangeStatus(UserUpdateDTO dto, UserEntity user) {
+        if (dto.getIsActive().equals(user.getState())) {
+            return null;
         }
-        keycloakUser.setEnabled(updateDTO.getIsActive());
-        existingEntity.setState(updateDTO.getIsActive());
-
-        UserStatusHistoryEntity entity = new UserStatusHistoryEntity();
-        entity.setUser(existingEntity);
-        entity.setStatusToDate(updateDTO.getIsActive());
-        entity.setModificationStatusDate(LocalDate.now());
-
-        return entity;
+        user.setState(dto.getIsActive());
+        UserStatusHistoryEntity h = new UserStatusHistoryEntity();
+        h.setUser(user);
+        h.setStatusToDate(dto.getIsActive());
+        h.setModificationStatusDate(LocalDate.now());
+        return h;
     }
 
     private void validateEmptyFields(UserUpdateDTO updateDTO) {
