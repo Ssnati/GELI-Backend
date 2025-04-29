@@ -18,7 +18,7 @@ public class LaboratoryMapper {
                 laboratoryDTO.getId(),
                 laboratoryDTO.getLaboratoryName(),
                 laboratoryDTO.getLaboratoryDescription(),
-                locationMapper.mapDTOToEntity(laboratoryDTO.getLocation()),
+                locationMapper.toEntity(laboratoryDTO.getLocation()),
                 laboratoryDTO.getLaboratoryAvailability()
         );
     }
@@ -28,7 +28,7 @@ public class LaboratoryMapper {
                 laboratoryEntity.getId(),
                 laboratoryEntity.getLaboratoryName(),
                 laboratoryEntity.getLaboratoryDescription(),
-                locationMapper.mapEntityToDTO(laboratoryEntity.getLaboratoryLocation()),
+                locationMapper.toDTO(laboratoryEntity.getLaboratoryLocation()),
                 laboratoryEntity.getLaboratoryAvailability()
         );
     }

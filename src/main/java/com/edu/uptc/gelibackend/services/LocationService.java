@@ -2,10 +2,8 @@ package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.LocationDTO;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
-import com.edu.uptc.gelibackend.entities.LocationTypeEntity;
 import com.edu.uptc.gelibackend.mappers.LocationMapper;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
-import com.edu.uptc.gelibackend.repositories.LocationTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,36 +17,27 @@ import java.util.stream.Collectors;
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final LocationTypeRepository locationTypeRepository;
     private final LocationMapper locationMapper;
 
     public List<LocationDTO> findAll() {
         return locationRepository.findAll().stream()
-                .map(locationMapper::mapEntityToDTO)
+                .map(locationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public Optional<LocationDTO> findById(Long id) {
         return locationRepository.findById(id)
-                .map(locationMapper::mapEntityToDTO);
+                .map(locationMapper::toDTO);
     }
 
     public LocationDTO create(LocationDTO dto) {
-        LocationEntity entity = locationMapper.mapDTOToEntity(dto);
+        LocationEntity entity = locationMapper.toEntity(dto);
 
-        // Validar tipo de lugar
-        Long locationTypeId = dto.getLocationType().getId();
-        LocationTypeEntity type = locationTypeRepository.findById(locationTypeId)
-                .orElseThrow(() -> new NotFoundException("LocationType not found"));
-        entity.setLocationType(type);
-
-        // Validar lugar padre si existe
-        if (dto.getParentLocation() != null && dto.getParentLocation().getId() != null) {
-            LocationEntity parent = locationRepository.findById(dto.getParentLocation().getId())
-                    .orElseThrow(() -> new NotFoundException("Parent location not found"));
-            entity.setParentLocation(parent);
+        if (locationRepository.findAll().stream()
+                .anyMatch(loc -> loc.getLocationName().equalsIgnoreCase(entity.getLocationName()))) {
+            throw new IllegalArgumentException("Location's name must be unique");
         }
 
-        return locationMapper.mapEntityToDTO(locationRepository.save(entity));
+        return locationMapper.toDTO(locationRepository.save(entity));
     }
 }

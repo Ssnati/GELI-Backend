@@ -97,81 +97,86 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO createUser(UserCreationDTO dto) {
-        // 1) Validate unique email & identification
         validateUniqueEmail(dto);
         validateUniqueIdentificationNumber(dto);
 
-        // 2) Prepare response-DTO & generate password
-        UserResponseDTO responseDto = mapper.mapCreationDTOToResponseDTO(dto);
         String generatedPassword = generateRandomPassword();
         String keycloakUserId = null;
 
         try {
-            // ── POSITION LOGIC ──────────────────────────────────────
-            PositionEntity position;
-            if (dto.getPositionId() != null) {
-                position = positionRepo.findById(dto.getPositionId())
-                        .orElseThrow(() -> new RuntimeException(
-                        "Position not found: " + dto.getPositionId()));
-            } else if (dto.getPositionName() != null && !dto.getPositionName().isBlank()) {
-                String name = dto.getPositionName().trim().toUpperCase();
-                position = positionRepo.findByNameIgnoreCase(name)
-                        .orElseGet(() -> {
-                            // create the new Position if it doesn’t exist
-                            PositionEntity newPos = new PositionEntity();
-                            newPos.setName(name);
-                            return positionRepo.save(newPos);
-                        });
-            } else {
-                throw new RuntimeException("Either positionId or positionName must be provided");
-            }
-            // ─────────────────────────────────────────────────────────
+            PositionEntity position = resolvePosition(dto);
 
-            // 3) Create in Keycloak
-            Response kcResp = createUserInKeycloak(dto, generatedPassword);
-            keycloakUserId = extractUserIdFromResponse(kcResp);
+            keycloakUserId = createUserInKeycloakAndAssignRole(dto, generatedPassword);
 
-            // 4) Assign realm role
-            keyCloakUserService.assignRealmRoleToUser(keycloakUserId, dto.getRole());
+            UserEntity savedUser = saveUserInDatabase(dto, keycloakUserId, position);
 
-            // 5) Fetch Keycloak representation
-            UserRepresentation kcRep = keyCloakUserService.getById(keycloakUserId);
-            responseDto.setRole(dto.getRole());
+            saveInitialStatusHistory(savedUser);
 
-            // 6) Build UserEntity and set Position
-            UserEntity entity = new UserEntity();
-            entity.setKeycloakId(keycloakUserId);
-            entity.setFirstName(dto.getFirstName());
-            entity.setLastName(dto.getLastName());
-            entity.setEmail(dto.getEmail());
-            entity.setIdentification(dto.getIdentification());
-            entity.setRole(dto.getRole());
-            entity.setState(true);
-            entity.setCreateDateUser(LocalDate.now());
-            entity.setPosition(position);
-
-            // 7) Save in local DB
-            UserEntity saved = userRepo.save(entity);
-            responseDto.setId(saved.getId());
-
-            // 8) Record initial status history
-            UserStatusHistoryEntity hist = new UserStatusHistoryEntity();
-            hist.setUser(saved);
-            hist.setStatusToDate(saved.getState());
-            hist.setModificationStatusDate(LocalDate.now());
-            historyRepo.save(hist);
-            responseDto.setModificationStatusDate(hist.getModificationStatusDate());
-
-            // 9) Send welcome email
             sendWelcomeEmail(dto.getEmail(), generatedPassword);
 
-            return responseDto;
+            return buildResponseDTO(savedUser);
 
         } catch (Exception e) {
-            if (keycloakUserId != null) {
-                keyCloakUserService.deleteUser(keycloakUserId);
-            }
+            handleKeycloakRollback(keycloakUserId);
             throw new RuntimeException("Error creating user: " + e.getMessage(), e);
+        }
+    }
+
+    private PositionEntity resolvePosition(UserCreationDTO dto) {
+        if (dto.getPositionId() != null) {
+            return positionRepo.findById(dto.getPositionId())
+                    .orElseThrow(() -> new RuntimeException("Position not found: " + dto.getPositionId()));
+        } else if (dto.getPositionName() != null && !dto.getPositionName().isBlank()) {
+            String name = dto.getPositionName().trim().toUpperCase();
+            return positionRepo.findByNameIgnoreCase(name)
+                    .orElseGet(() -> {
+                        PositionEntity newPos = new PositionEntity();
+                        newPos.setName(name);
+                        return positionRepo.save(newPos);
+                    });
+        } else {
+            throw new RuntimeException("Either positionId or positionName must be provided");
+        }
+    }
+
+    private String createUserInKeycloakAndAssignRole(UserCreationDTO dto, String password) {
+        Response kcResp = createUserInKeycloak(dto, password);
+        String keycloakUserId = extractUserIdFromResponse(kcResp);
+        keyCloakUserService.assignRealmRoleToUser(keycloakUserId, dto.getRole());
+        return keycloakUserId;
+    }
+
+    private UserEntity saveUserInDatabase(UserCreationDTO dto, String keycloakUserId, PositionEntity position) {
+        UserEntity entity = new UserEntity();
+        entity.setKeycloakId(keycloakUserId);
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setEmail(dto.getEmail());
+        entity.setIdentification(dto.getIdentification());
+        entity.setRole(dto.getRole());
+        entity.setState(true);
+        entity.setCreateDateUser(LocalDate.now());
+        entity.setPosition(position);
+        return userRepo.save(entity);
+    }
+
+    private void saveInitialStatusHistory(UserEntity user) {
+        UserStatusHistoryEntity hist = new UserStatusHistoryEntity();
+        hist.setUser(user);
+        hist.setStatusToDate(user.getState());
+        hist.setModificationStatusDate(LocalDate.now());
+        historyRepo.save(hist);
+    }
+
+    private UserResponseDTO buildResponseDTO(UserEntity user) {
+        UserResponseDTO responseDto = mapper.completeDTOWithEntity(new UserResponseDTO(), user);
+        responseDto.setModificationStatusDate(LocalDate.now());
+        return responseDto;
+    }
+
+    private void handleKeycloakRollback(String keycloakUserId) {
+        if (keycloakUserId != null) {
+            keyCloakUserService.deleteUser(keycloakUserId);
         }
     }
 
@@ -204,11 +209,11 @@ public class UserService {
 
         message.setText(
                 "¡Bienvenido a GELI!\n\n"
-                + "Tu cuenta ha sido creada exitosamente.\n"
-                + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
-                + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
-                + "Saludos,\n"
-                + "Equipo GELI"
+                        + "Tu cuenta ha sido creada exitosamente.\n"
+                        + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
+                        + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
+                        + "Saludos,\n"
+                        + "Equipo GELI"
         );
 
         mailSender.send(message);

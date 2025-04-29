@@ -1,16 +1,16 @@
 package com.edu.uptc.gelibackend.dtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class LocationDTO {
 
     private Long id;
     private String locationName;
-    private LocationTypeDTO locationType;
-    private LocationDTO parentLocation;
 }
