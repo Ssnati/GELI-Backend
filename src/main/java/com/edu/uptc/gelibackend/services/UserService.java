@@ -1,14 +1,17 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.PositionDTO;
+import com.edu.uptc.gelibackend.dtos.PositionHistoryDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
 import com.edu.uptc.gelibackend.entities.Position;
 import com.edu.uptc.gelibackend.entities.UserEntity;
+import com.edu.uptc.gelibackend.entities.UserPositionHistoryEntity;
 import com.edu.uptc.gelibackend.entities.UserStatusHistoryEntity;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.PositionRepository;
+import com.edu.uptc.gelibackend.repositories.UserPositionHistoryRepository;
 import com.edu.uptc.gelibackend.repositories.UserRepository;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.repositories.UserStatusHistoryRepository;
@@ -39,6 +42,7 @@ public class UserService {
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
     private final UserSpecification userSpecification;
+    private final UserPositionHistoryRepository positionHistoryRepo;
 
     public List<UserResponseDTO> findAll() {
         List<UserEntity> userEntities = userRepo.findAll(); // -> api -> consultan todos los usuarios de la base de datos
@@ -253,38 +257,66 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // ——— 1) Manejar cambio de estado ———
-        UserStatusHistoryEntity history = handleChangeStatus(dto, user);
-        if (history != null) {
-            historyRepo.save(history);
+        UserStatusHistoryEntity statusHistory = handleChangeStatus(dto, user);
+        if (statusHistory != null) {
+            historyRepo.save(statusHistory);
         }
 
-        // ——— 2) Manejar cambio de cargo ———
+        // ——— 2) Manejar cambio de cargo con historial ———
+        UserPositionHistoryEntity posHistory = null;
         if (dto.getPositionId() != null || dto.getPositionName() != null) {
-            Position pos;
+            // guarda el cargo anterior
+            Position oldPos = user.getPosition();
+
+            // obtiene o crea el nuevo cargo
+            Position newPos;
             if (dto.getPositionId() != null) {
-                pos = positionRepo.findById(dto.getPositionId())
+                newPos = positionRepo.findById(dto.getPositionId())
                         .orElseThrow(() -> new RuntimeException("Cargo no encontrado"));
             } else {
-                pos = new Position();
-                pos.setName(dto.getPositionName());
-                pos = positionRepo.save(pos);
+                newPos = new Position();
+                newPos.setName(dto.getPositionName());
+                newPos = positionRepo.save(newPos);
             }
-            user.setPosition(pos);
+
+            // si cambió, crea el registro de historial
+            if (oldPos == null || !oldPos.getId().equals(newPos.getId())) {
+                posHistory = new UserPositionHistoryEntity();
+                posHistory.setUser(user);
+                posHistory.setOldPosition(oldPos);
+                posHistory.setNewPosition(newPos);
+                posHistory.setChangeDate(LocalDate.now());
+                positionHistoryRepo.save(posHistory);
+            }
+
+            // actualiza la posición en el usuario
+            user.setPosition(newPos);
         }
 
-        // ——— 3) Persistir usuario y, si hubo cambio de estado, la historia ———
+        // ——— 3) Persistir usuario ———
         userRepo.save(user);
 
-        // ——— 4) Actualizar en Keycloak solo el isActive ———
+        // ——— 4) Actualizar en Keycloak sólo el isActive ———
         UserRepresentation kc = keyCloakUserService.getById(user.getKeycloakId());
         kc.setEnabled(dto.getIsActive());
         keyCloakUserService.updateUser(kc);
 
-        // ——— 5) Devolver DTO completo ———
+        // ——— 5) Construir y devolver el DTO completo ———
         UserResponseDTO out = mapper.completeDTOWithEntity(new UserResponseDTO(), user);
-        if (history != null) {
-            out.setModificationStatusDate(history.getModificationStatusDate());
+
+        if (statusHistory != null) {
+            out.setModificationStatusDate(statusHistory.getModificationStatusDate());
         }
+        // si hubo cambio de cargo, agrega al DTO el último registro
+        if (posHistory != null) {
+            PositionHistoryDTO ph = new PositionHistoryDTO(
+                    posHistory.getOldPosition() != null ? posHistory.getOldPosition().getName() : null,
+                    posHistory.getNewPosition().getName(),
+                    posHistory.getChangeDate()
+            );
+            out.getPositionHistory().add(0, ph);  // inserta al inicio
+        }
+
         return out;
     }
 

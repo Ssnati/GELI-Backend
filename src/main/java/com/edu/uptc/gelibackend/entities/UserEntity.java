@@ -65,4 +65,12 @@ public class UserEntity {
             fetch = FetchType.LAZY
     )
     private List<UserStatusHistoryEntity> statusHistory = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<UserPositionHistoryEntity> positionHistory = new ArrayList<>();
 }
