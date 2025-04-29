@@ -56,7 +56,7 @@ public class UserEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "position_id", nullable = false)
-    private Position position;
+    private PositionEntity position;
 
     @OneToMany(
             mappedBy = "user",
@@ -69,4 +69,12 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<AuthorizedUserEquipmentsEntity> authorizedUserEquipments;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<UserPositionHistoryEntity> positionHistory = new ArrayList<>();
 }

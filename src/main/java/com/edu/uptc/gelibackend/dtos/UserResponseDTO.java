@@ -24,4 +24,6 @@ public class UserResponseDTO {
     private LocalDate creationDate;
     private PositionDTO position;
     private List<AuthorizedEquipmentDTO> authorizedUserEquipments;
+    private List<PositionHistoryDTO> positionHistory;
+
 }
