@@ -94,10 +94,6 @@ public class UserSpecification extends BaseSpecification<UserEntity, UserFilterD
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("enabledStatus"), filter.getEnabledStatus()));
         }
-        if (filter.getRole() != null && !filter.getRole().isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.join("roles").get("name")), "%" + filter.getRole().toLowerCase() + "%"));
-        }
         return spec;
     }
 }
