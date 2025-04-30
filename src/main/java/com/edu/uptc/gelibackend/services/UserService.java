@@ -295,7 +295,7 @@ public class UserService {
         }
 
         // ——— 2) Manejar cambio de cargo con historial ———
-        UserPositionHistoryEntity posHistory = null;
+        UserPositionHistoryEntity posHistory;
         if (dto.getPositionId() != null || dto.getPositionName() != null) {
             // guarda el cargo anterior
             PositionEntity oldPos = user.getPosition();
@@ -339,15 +339,6 @@ public class UserService {
         if (statusHistory != null) {
             out.setModificationStatusDate(statusHistory.getModificationStatusDate());
         }
-        // si hubo cambio de cargo, agrega al DTO el último registro
-        if (posHistory != null) {
-            PositionHistoryDTO ph = new PositionHistoryDTO(
-                    posHistory.getOldPosition() != null ? posHistory.getOldPosition().getName() : null,
-                    posHistory.getNewPosition().getName(),
-                    posHistory.getChangeDate()
-            );
-            out.getPositionHistory().add(0, ph);  // inserta al inicio
-        }
 
         return out;
     }
@@ -356,11 +347,11 @@ public class UserService {
         if (dto.getIsActive().equals(user.getState())) {
             return null;
         }
-        user.setState(dto.getIsActive());
         UserStatusHistoryEntity h = new UserStatusHistoryEntity();
         h.setUser(user);
         h.setStatusToDate(dto.getIsActive());
         h.setModificationStatusDate(LocalDate.now());
+        user.setState(dto.getIsActive());
         return h;
     }
 

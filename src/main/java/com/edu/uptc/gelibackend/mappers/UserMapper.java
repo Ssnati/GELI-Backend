@@ -58,6 +58,7 @@ public class UserMapper {
         dto.setCreationDate(entity.getCreateDateUser());
         dto.setAuthorizedUserEquipments(userEquipmentsMapper.toAuthorizedEquipmentDTOs(entity.getAuthorizedUserEquipments()));
         dto.setPosition(posMapper.toDto(entity.getPosition()));
+        dto.setPositionHistory(posMapper.toPositionHistoryDTOs(entity.getPositionHistory()));
         return dto;
     }
 
