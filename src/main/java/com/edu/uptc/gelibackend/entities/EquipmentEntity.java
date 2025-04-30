@@ -39,8 +39,12 @@ public class EquipmentEntity {
     @JoinColumn(name = "laboratory_location_id", nullable = false)
     private LaboratoryEntity laboratory;
 
+    @NotNull
     @Column(name = "availability", nullable = false)
     private Boolean availability;
+
+    @Column(name = "equipment_observations")
+    private String equipmentObservations;
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude

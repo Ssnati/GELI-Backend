@@ -31,6 +31,11 @@ public class LaboratorySpecification extends BaseSpecification<LaboratoryEntity,
                     cb.like(cb.lower(root.get("laboratoryDescription")), "%" + filter.getLaboratoryDescription().toLowerCase() + "%"));
         }
 
+        if (filter.getLaboratoryObservations() != null && !filter.getLaboratoryObservations().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("laboratoryObservations")), "%" + filter.getLaboratoryObservations().toLowerCase() + "%"));
+        }
+
         return spec;
     }
 }

@@ -15,6 +15,7 @@ public class EquipmentCreationDTO {
     private String inventoryNumber;
     private Long laboratoryId;
     private Boolean availability;
+    private String equipmentObservations;
     private List<Long> authorizedUsersIds;
     private List<Long> functions;
 }

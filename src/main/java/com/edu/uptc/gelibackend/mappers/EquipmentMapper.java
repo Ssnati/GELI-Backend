@@ -23,6 +23,7 @@ public class EquipmentMapper {
         entity.setInventoryNumber(equipmentDTO.getInventoryNumber());
         entity.setLaboratory(laboratoryMapper.mapDTOToEntity(equipmentDTO.getLaboratory()));
         entity.setAvailability(equipmentDTO.getAvailability());
+        entity.setEquipmentObservations(equipmentDTO.getEquipmentObservations());
         return entity;
     }
 
@@ -36,6 +37,7 @@ public class EquipmentMapper {
         equipmentResponseDTO.setFunctions(functionMapper.equipmentFunctionsToDTOs(equipmentEntity.getEquipmentFunctions()));
         equipmentResponseDTO.setAuthorizedUsers(userMapper.toResponseDTOs(equipmentEntity.getAuthorizedUsersEquipments()));
         equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
+        equipmentResponseDTO.setEquipmentObservations(equipmentEntity.getEquipmentObservations());
         return equipmentResponseDTO;
     }
 
@@ -45,6 +47,7 @@ public class EquipmentMapper {
         equipmentEntity.setBrand(dto.getBrand());
         equipmentEntity.setInventoryNumber(dto.getInventoryNumber());
         equipmentEntity.setAvailability(dto.getAvailability());
+        equipmentEntity.setEquipmentObservations(dto.getEquipmentObservations());
         return equipmentEntity;
     }
 }

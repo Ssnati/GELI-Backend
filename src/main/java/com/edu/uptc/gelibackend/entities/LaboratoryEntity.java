@@ -3,6 +3,7 @@ package com.edu.uptc.gelibackend.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "laboratory")
+@Builder
 public class LaboratoryEntity {
 
     @Id
@@ -33,4 +35,6 @@ public class LaboratoryEntity {
     @Column(name = "laboratory_availability", nullable = false)
     private Boolean laboratoryAvailability; // Disponibilidad del laboratorio
 
+    @Column(name = "laboratory_observations")
+    private String laboratoryObservations; // Observaciones del laboratorio
 }

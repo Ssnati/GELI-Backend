@@ -16,6 +16,7 @@ public class EquipmentResponseDTO {
     private String inventoryNumber;
     private LaboratoryDTO laboratory;
     private Boolean availability;
+    private String equipmentObservations;
     private List<FunctionDTO> functions;
     private List<UserResponseDTO> authorizedUsers;
 }

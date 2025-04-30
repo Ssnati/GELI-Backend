@@ -34,6 +34,12 @@ public class EquipmentSpecification extends BaseSpecification<EquipmentEntity, E
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("availability"), filter.getAvailability()));
         }
+
+        if (filter.getEquipmentObservations() != null && !filter.getEquipmentObservations().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("equipmentObservations")), "%" + filter.getEquipmentObservations().toLowerCase() + "%"));
+        }
+
         return spec;
     }
 }

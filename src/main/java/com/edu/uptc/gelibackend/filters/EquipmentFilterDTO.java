@@ -14,4 +14,5 @@ public class EquipmentFilterDTO implements BaseFilterDTO {
     private String inventoryNumber;
     private Long laboratoryId;
     private Boolean availability;
+    private String equipmentObservations;
 }

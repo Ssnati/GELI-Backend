@@ -13,4 +13,5 @@ public class LaboratoryFilterDTO implements BaseFilterDTO {
     private Boolean laboratoryAvailability;
     private Long locationId;
     private String laboratoryDescription;
+    private String laboratoryObservations;
 }

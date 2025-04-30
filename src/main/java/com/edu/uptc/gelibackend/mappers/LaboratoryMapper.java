@@ -14,23 +14,25 @@ public class LaboratoryMapper {
     }
 
     public LaboratoryEntity mapDTOToEntity(LaboratoryDTO laboratoryDTO) {
-        return new LaboratoryEntity(
-                laboratoryDTO.getId(),
-                laboratoryDTO.getLaboratoryName(),
-                laboratoryDTO.getLaboratoryDescription(),
-                locationMapper.toEntity(laboratoryDTO.getLocation()),
-                laboratoryDTO.getLaboratoryAvailability()
-        );
+        return LaboratoryEntity.builder()
+                .id(laboratoryDTO.getId())
+                .laboratoryName(laboratoryDTO.getLaboratoryName())
+                .laboratoryDescription(laboratoryDTO.getLaboratoryDescription())
+                .laboratoryLocation(locationMapper.toEntity(laboratoryDTO.getLocation()))
+                .laboratoryAvailability(laboratoryDTO.getLaboratoryAvailability())
+                .laboratoryObservations(laboratoryDTO.getLaboratoryObservations())
+                .build();
     }
 
     public LaboratoryDTO mapEntityToDTO(LaboratoryEntity laboratoryEntity) {
-        return new LaboratoryDTO(
-                laboratoryEntity.getId(),
-                laboratoryEntity.getLaboratoryName(),
-                laboratoryEntity.getLaboratoryDescription(),
-                locationMapper.toDTO(laboratoryEntity.getLaboratoryLocation()),
-                laboratoryEntity.getLaboratoryAvailability()
-        );
+        return LaboratoryDTO.builder()
+                .id(laboratoryEntity.getId())
+                .laboratoryName(laboratoryEntity.getLaboratoryName())
+                .laboratoryDescription(laboratoryEntity.getLaboratoryDescription())
+                .location(locationMapper.toDTO(laboratoryEntity.getLaboratoryLocation()))
+                .laboratoryAvailability(laboratoryEntity.getLaboratoryAvailability())
+                .laboratoryObservations(laboratoryEntity.getLaboratoryObservations())
+                .build();
     }
 
 }
