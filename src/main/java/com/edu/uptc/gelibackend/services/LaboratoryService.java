@@ -67,6 +67,7 @@ public class LaboratoryService {
         existing.setLaboratoryDescription(dto.getLaboratoryDescription());
         existing.setLaboratoryAvailability(dto.getLaboratoryAvailability());
         existing.setLaboratoryLocation(location);
+        existing.setLaboratoryObservations(dto.getLaboratoryObservations());
 
         return mapper.mapEntityToDTO(labRepo.save(existing));
     }
