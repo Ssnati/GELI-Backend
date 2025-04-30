@@ -17,6 +17,7 @@ import java.util.List;
 public class UserMapper {
 
     private final AuthorizedUserEquipmentsMapper userEquipmentsMapper;
+    private final PositionMapper posMapper;
 
     public UserEntity mapResponseDTOToEntity(UserResponseDTO dto) {
         UserEntity entity = new UserEntity();
@@ -56,6 +57,7 @@ public class UserMapper {
         dto.setRole(entity.getRole());
         dto.setCreationDate(entity.getCreateDateUser());
         dto.setAuthorizedUserEquipments(userEquipmentsMapper.toAuthorizedEquipmentDTOs(entity.getAuthorizedUserEquipments()));
+        dto.setPosition(posMapper.toDto(entity.getPosition()));
         return dto;
     }
 
@@ -74,6 +76,10 @@ public class UserMapper {
     public UserEntity mapCreationDTOToEntity(UserCreationDTO dto) {
         UserEntity userEntity = new UserEntity();
         userEntity.setIdentification(dto.getIdentification());
+        userEntity.setFirstName(dto.getFirstName());
+        userEntity.setLastName(dto.getLastName());
+        userEntity.setEmail(dto.getEmail());
+        userEntity.setRole(dto.getRole());
         return userEntity;
     }
 

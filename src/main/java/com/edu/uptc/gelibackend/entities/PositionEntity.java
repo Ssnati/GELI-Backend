@@ -26,5 +26,6 @@ public class PositionEntity {
      * Inverse side: one position → many users
      */
     @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<UserEntity> users = new ArrayList<>();
 }

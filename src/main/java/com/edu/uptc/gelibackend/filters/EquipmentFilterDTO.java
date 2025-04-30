@@ -1,6 +1,5 @@
 package com.edu.uptc.gelibackend.filters;
 
-import com.edu.uptc.gelibackend.filters.BaseFilterDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -5,16 +5,11 @@ import com.edu.uptc.gelibackend.dtos.PositionHistoryDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
-import com.edu.uptc.gelibackend.entities.PositionEntity;
-import com.edu.uptc.gelibackend.entities.UserEntity;
-import com.edu.uptc.gelibackend.entities.UserPositionHistoryEntity;
-import com.edu.uptc.gelibackend.entities.UserStatusHistoryEntity;
+import com.edu.uptc.gelibackend.entities.*;
+import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
-import com.edu.uptc.gelibackend.repositories.PositionRepository;
-import com.edu.uptc.gelibackend.repositories.UserPositionHistoryRepository;
-import com.edu.uptc.gelibackend.repositories.UserRepository;
+import com.edu.uptc.gelibackend.repositories.*;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
-import com.edu.uptc.gelibackend.repositories.UserStatusHistoryRepository;
 import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import com.edu.uptc.gelibackend.utils.KeyCloakUtils;
 
@@ -38,6 +33,7 @@ public class UserService {
 
     private final PositionRepository positionRepo;      // ← inject this
     private final UserStatusHistoryRepository historyRepo;
+    private final EquipmentRepository equipmentRepo;
     private final UserRepository userRepo;
     private final KeyCloakUserService keyCloakUserService;
     private final UserMapper mapper;
@@ -147,17 +143,36 @@ public class UserService {
     }
 
     private UserEntity saveUserInDatabase(UserCreationDTO dto, String keycloakUserId, PositionEntity position) {
-        UserEntity entity = new UserEntity();
+        UserEntity entity = mapper.mapCreationDTOToEntity(dto);
         entity.setKeycloakId(keycloakUserId);
-        entity.setFirstName(dto.getFirstName());
-        entity.setLastName(dto.getLastName());
-        entity.setEmail(dto.getEmail());
-        entity.setIdentification(dto.getIdentification());
-        entity.setRole(dto.getRole());
         entity.setState(true);
         entity.setCreateDateUser(LocalDate.now());
         entity.setPosition(position);
+        List<AuthorizedUserEquipmentsEntity> authorizedEquipments = handleAuthorizedEquipments(entity, dto.getAuthorizedEquipmentsIds());
+        entity.setAuthorizedUserEquipments(authorizedEquipments);
         return userRepo.save(entity);
+    }
+
+    private List<AuthorizedUserEquipmentsEntity> handleAuthorizedEquipments(UserEntity entity, List<Long> authorizedEquipmentsIds) {
+        if (authorizedEquipmentsIds == null || authorizedEquipmentsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<EquipmentEntity> authorizedUserEquipmentsEntities = equipmentRepo.findAllById(authorizedEquipmentsIds);
+
+        return authorizedEquipmentsIds.stream()
+                .map(id -> {
+                    AuthorizedUserEquipmentsEntity authorizedUserEquipments = new AuthorizedUserEquipmentsEntity();
+                    authorizedUserEquipments.setId(new AuthorizedUserEquipmentsId());
+                    authorizedUserEquipments.setUser(entity);
+                    authorizedUserEquipments.setEquipment(authorizedUserEquipmentsEntities.stream()
+                            .filter(e -> e.getId().equals(id))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Equipment not found: " + id)));
+                    authorizedUserEquipments.setActualStatus(true);
+                    return authorizedUserEquipments;
+                })
+                .collect(Collectors.toList());
     }
 
     private void saveInitialStatusHistory(UserEntity user) {
