@@ -33,6 +33,13 @@ public class LaboratoryController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/exists-by-name")
+    @PreAuthorize("hasAuthority('LABORATORY_READ')")
+    public ResponseEntity<Boolean> getById(@RequestParam String laboratoryName) {
+        boolean exists = service.existsByName(laboratoryName);
+        return ResponseEntity.ok(exists);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('LABORATORY_WRITE')")
     public ResponseEntity<LaboratoryDTO> create(@RequestBody LaboratoryDTO dto) {

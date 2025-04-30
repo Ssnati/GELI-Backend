@@ -165,4 +165,12 @@ public class EquipmentService {
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    public boolean existsByInventoryNumber(String inventoryNumber) {
+        return equipmentRepo.existsByInventoryNumberIgnoreCase(inventoryNumber);
+    }
+
+    public boolean existsByName(String equipmentName) {
+        return equipmentRepo.existsByEquipmentNameIgnoreCase(equipmentName);
+    }
 }

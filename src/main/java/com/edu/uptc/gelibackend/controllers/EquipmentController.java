@@ -61,6 +61,20 @@ public class EquipmentController {
         return equipment != null ? ResponseEntity.ok(equipment) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/exists-by-inventory-number")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<Boolean> existsByInventoryNumber(@RequestParam String inventoryNumber) {
+        boolean exists = service.existsByInventoryNumber(inventoryNumber);
+        return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/exists-by-name")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String equipmentName) {
+        boolean exists = service.existsByName(equipmentName);
+        return ResponseEntity.ok(exists);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
     public ResponseEntity<EquipmentResponseDTO> create(@RequestBody EquipmentCreationDTO dto) {

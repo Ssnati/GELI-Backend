@@ -8,6 +8,7 @@ import com.edu.uptc.gelibackend.mappers.LaboratoryMapper;
 import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
 import com.edu.uptc.gelibackend.specifications.LaboratorySpecification;
+import io.micrometer.observation.ObservationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -87,4 +88,7 @@ public class LaboratoryService {
                 .collect(Collectors.toList());
     }
 
+    public boolean existsByName(String laboratoryName) {
+        return labRepo.existsByLaboratoryNameIgnoreCase(laboratoryName);
+    }
 }

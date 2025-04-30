@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EquipmentRepository extends JpaRepository<EquipmentEntity, Long>, JpaSpecificationExecutor<EquipmentEntity> {
+    Boolean existsByInventoryNumberIgnoreCase(String inventoryNumber);
 
+    Boolean existsByEquipmentNameIgnoreCase(String equipmentName);
 }
