@@ -75,14 +75,6 @@ public class EquipmentController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('EQUIPMENT_DELETE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
 
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
