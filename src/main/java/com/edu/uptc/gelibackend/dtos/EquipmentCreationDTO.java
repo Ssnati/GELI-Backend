@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class EquipmentCreationDTO {
     private String equipmentName;
-    private String brand;
+    private BrandDTO brand;
     private String inventoryNumber;
     private Long laboratoryId;
     private Boolean availability;

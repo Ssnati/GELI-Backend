@@ -15,12 +15,13 @@ public class AuthorizedUserEquipmentsMapper {
 
     private final LaboratoryMapper laboratoryMapper;
     private final FunctionMapper functionMapper;
+    private final BrandMapper brandMapper;
 
     public AuthorizedEquipmentDTO toAuthorizedEquipmentDTO(EquipmentEntity equipmentEntity) {
         return AuthorizedEquipmentDTO.builder()
                 .id(equipmentEntity.getId())
                 .equipmentName(equipmentEntity.getEquipmentName())
-                .brand(equipmentEntity.getBrand())
+                .brand(brandMapper.toDTO(equipmentEntity.getBrand()))
                 .inventoryNumber(equipmentEntity.getInventoryNumber())
                 .laboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()))
                 .availability(equipmentEntity.getAvailability())

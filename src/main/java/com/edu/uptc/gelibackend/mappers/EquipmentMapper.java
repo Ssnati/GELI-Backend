@@ -13,13 +13,14 @@ public class EquipmentMapper {
     private final LaboratoryMapper laboratoryMapper;
     private final FunctionMapper functionMapper;
     private final UserMapper userMapper;
+    private final BrandMapper brandMapper;
 
 
     public EquipmentEntity toEntity(EquipmentResponseDTO equipmentDTO) {
         EquipmentEntity entity = new EquipmentEntity();
         entity.setId(equipmentDTO.getId());
         entity.setEquipmentName(equipmentDTO.getEquipmentName());
-        entity.setBrand(equipmentDTO.getBrand());
+        entity.setBrand(brandMapper.toEntity(equipmentDTO.getBrand()));
         entity.setInventoryNumber(equipmentDTO.getInventoryNumber());
         entity.setLaboratory(laboratoryMapper.mapDTOToEntity(equipmentDTO.getLaboratory()));
         entity.setAvailability(equipmentDTO.getAvailability());
@@ -31,7 +32,7 @@ public class EquipmentMapper {
         EquipmentResponseDTO equipmentResponseDTO = new EquipmentResponseDTO();
         equipmentResponseDTO.setId(equipmentEntity.getId());
         equipmentResponseDTO.setEquipmentName(equipmentEntity.getEquipmentName());
-        equipmentResponseDTO.setBrand(equipmentEntity.getBrand());
+        equipmentResponseDTO.setBrand(brandMapper.toDTO(equipmentEntity.getBrand()));
         equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         equipmentResponseDTO.setLaboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()));
         equipmentResponseDTO.setFunctions(functionMapper.equipmentFunctionsToDTOs(equipmentEntity.getEquipmentFunctions()));
@@ -44,7 +45,7 @@ public class EquipmentMapper {
     public EquipmentEntity toEntity(EquipmentCreationDTO dto) {
         EquipmentEntity equipmentEntity = new EquipmentEntity();
         equipmentEntity.setEquipmentName(dto.getEquipmentName());
-        equipmentEntity.setBrand(dto.getBrand());
+        equipmentEntity.setBrand(brandMapper.toEntity(dto.getBrand()));
         equipmentEntity.setInventoryNumber(dto.getInventoryNumber());
         equipmentEntity.setAvailability(dto.getAvailability());
         equipmentEntity.setEquipmentObservations(dto.getEquipmentObservations());

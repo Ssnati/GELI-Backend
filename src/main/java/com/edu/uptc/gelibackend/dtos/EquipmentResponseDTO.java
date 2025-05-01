@@ -12,7 +12,7 @@ import java.util.List;
 public class EquipmentResponseDTO {
     private Long id;
     private String equipmentName;
-    private String brand;
+    private BrandDTO brand;
     private String inventoryNumber;
     private LaboratoryDTO laboratory;
     private Boolean availability;

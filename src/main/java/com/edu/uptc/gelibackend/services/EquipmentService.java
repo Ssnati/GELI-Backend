@@ -51,6 +51,7 @@ public class EquipmentService {
     public EquipmentResponseDTO create(EquipmentCreationDTO dto) {
         this.validateUniqueName(dto.getEquipmentName());
         this.validateInventoryNumber(dto.getInventoryNumber());
+        this.validateBrandExistence(dto.getBrand().getId());
 
         EquipmentEntity equipment = mapper.toEntity(dto);
         equipment.setLaboratory(this.findLaboratoryById(dto.getLaboratoryId()));
@@ -59,6 +60,10 @@ public class EquipmentService {
 
         EquipmentEntity save = equipmentRepo.save(equipment);
         return mapper.toResponseDTO(save);
+    }
+
+    private void validateBrandExistence(Long id) {
+
     }
 
     private void setUsersToEquipment(EquipmentEntity equipment, List<UserEntity> userEntities) {
@@ -136,7 +141,7 @@ public class EquipmentService {
         this.validateInventoryNumber(dto.getInventoryNumber());
 
         exist.setEquipmentName(dto.getEquipmentName());
-        exist.setBrand(dto.getBrand());
+//        exist.setBrand(dto.getBrand());
         exist.setInventoryNumber(dto.getInventoryNumber());
         exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratory().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));

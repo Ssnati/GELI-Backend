@@ -27,8 +27,9 @@ public class EquipmentEntity {
     private String equipmentName;
 
     @NotNull
-    @Column(name = "brand", nullable = false)
-    private String brand;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private BrandEntity brand;
 
     @NotNull
     @Column(name = "inventory_number", nullable = false)

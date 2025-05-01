@@ -14,7 +14,7 @@ import java.util.List;
 public class AuthorizedEquipmentDTO {
     private Long id;
     private String equipmentName;
-    private String brand;
+    private BrandDTO brand;
     private String inventoryNumber;
     private LaboratoryDTO laboratory;
     private Boolean availability;
