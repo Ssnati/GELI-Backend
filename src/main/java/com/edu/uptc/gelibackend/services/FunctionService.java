@@ -34,6 +34,7 @@ public class FunctionService {
         validateUniqueName(function.getFunctionName());
 
         FunctionEntity functionEntity = mapper.toEntity(function);
+        functionEntity.setId(null); // Ensure the ID is null for a new entity
         FunctionEntity savedFunction = functionRepository.save(functionEntity);
         return mapper.toDTO(savedFunction);
     }
