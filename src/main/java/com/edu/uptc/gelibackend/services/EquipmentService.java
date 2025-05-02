@@ -70,31 +70,31 @@ public class EquipmentService {
         // Crear los registros de AuthorizedUserEquipmentsEntity
         List<AuthorizedUserEquipmentsEntity> equipmentAuthorizedUsers = userEntities.stream()
                 .map(user -> AuthorizedUserEquipmentsEntity.builder()
-                        .id(new AuthorizedUserEquipmentsId())
-                        .actualStatus(true)
-                        .equipment(equipment)
-                        .user(user)
-                        .build())
+                .id(new AuthorizedUserEquipmentsId())
+                .actualStatus(true)
+                .equipment(equipment)
+                .user(user)
+                .build())
                 .toList();
         // Crear el historial de cambios para AuthorizedUserEquipmentsEntity
         List<EquipmentAuthorizationHistoryEntity> history = equipmentAuthorizedUsers.stream()
                 .map(equipmentAuthorizedUser -> EquipmentAuthorizationHistoryEntity.builder()
-                        .authorizedUserEquipments(equipmentAuthorizedUser)
-                        .modificationAuthorizationStatusDate(LocalDate.now())
-                        .authorizationStatusToDate(true)
-                        .build())
+                .authorizedUserEquipments(equipmentAuthorizedUser)
+                .modificationAuthorizationStatusDate(LocalDate.now())
+                .authorizationStatusToDate(true)
+                .build())
                 .toList();
         // Guardar los registros de AuthorizedUserEquipmentsEntity
         equipment.setAuthorizedUsersEquipments(equipmentAuthorizedUsers);
         // Guardar el historial de cambios
-        equipmentAuthorizedUsers.forEach(equipmentAuthorizedUser ->
-                equipmentAuthorizedUser.setEquipmentAuthorizationHistory(new ArrayList<>(history)));
+        equipmentAuthorizedUsers.forEach(equipmentAuthorizedUser
+                -> equipmentAuthorizedUser.setEquipmentAuthorizationHistory(new ArrayList<>(history)));
     }
 
     private List<UserEntity> findUsersByIds(List<Long> authorizedUsersIds) {
         return authorizedUsersIds.stream()
                 .map(userId -> userRepo.findById(userId)
-                        .orElseThrow(() -> new IllegalArgumentException("User not found")))
+                .orElseThrow(() -> new IllegalArgumentException("User not found")))
                 .collect(Collectors.toList());
     }
 
@@ -137,14 +137,19 @@ public class EquipmentService {
         EquipmentEntity exist = equipmentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
 
-        this.validateUniqueName(dto.getEquipmentName());
-        this.validateInventoryNumber(dto.getInventoryNumber());
+        // Actualizar laboratorio
+        if (dto.getLaboratory() != null && dto.getLaboratory().getId() != null) {
+            LaboratoryEntity lab = laboratoryRepo.findById(dto.getLaboratory().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Laboratory not found"));
+            exist.setLaboratory(lab);
+        }
 
-        exist.setEquipmentName(dto.getEquipmentName());
-//        exist.setBrand(dto.getBrand());
-        exist.setInventoryNumber(dto.getInventoryNumber());
-        exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratory().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));
+        // Actualizar estado de disponibilidad
+        exist.setAvailability(dto.getAvailability());
+
+        // Actualizar observaciones
+        exist.setEquipmentObservations(dto.getEquipmentObservations());
+
         EquipmentEntity updatedEntity = equipmentRepo.save(exist);
         return mapper.toResponseDTO(updatedEntity);
     }
