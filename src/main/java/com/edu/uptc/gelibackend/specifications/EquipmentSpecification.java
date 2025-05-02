@@ -5,39 +5,47 @@ import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+
 @Component
 public class EquipmentSpecification extends BaseSpecification<EquipmentEntity, EquipmentFilterDTO> {
+
     @Override
     protected Specification<EquipmentEntity> addFilters(Specification<EquipmentEntity> spec, EquipmentFilterDTO filter) {
 
+        // Buscar por nombre o código de inventario (OR)
         if (filter.getEquipmentName() != null && !filter.getEquipmentName().isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("equipmentName")), "%" + filter.getEquipmentName().toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("equipmentName")), "%" + filter.getEquipmentName().toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("inventoryNumber")), "%" + filter.getEquipmentName().toLowerCase() + "%")
+            ));
         }
 
-        if (filter.getBrand() != null && !filter.getBrand().isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("brand")), "%" + filter.getBrand().toLowerCase() + "%"));
+        // Marca por ID
+        if (filter.getBrandId() != null) {
+            spec = spec.and((root, query, cb)
+                    -> cb.equal(root.get("brand").get("id"), filter.getBrandId()));
         }
 
-        if (filter.getInventoryNumber() != null && !filter.getInventoryNumber().isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("inventoryNumber")), "%" + filter.getInventoryNumber().toLowerCase() + "%"));
-        }
-
+        // Laboratorio por ID
         if (filter.getLaboratoryId() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("laboratory").get("id"), filter.getLaboratoryId()));
+            spec = spec.and((root, query, cb)
+                    -> cb.equal(root.get("laboratory").get("id"), filter.getLaboratoryId()));
         }
 
+        // Disponibilidad
         if (filter.getAvailability() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("availability"), filter.getAvailability()));
+            spec = spec.and((root, query, cb)
+                    -> cb.equal(root.get("availability"), filter.getAvailability()));
         }
 
-        if (filter.getEquipmentObservations() != null && !filter.getEquipmentObservations().isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("equipmentObservations")), "%" + filter.getEquipmentObservations().toLowerCase() + "%"));
+        // Función (verifica si alguna de las funciones del equipo coincide)
+        if (filter.getFunctionId() != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<?, ?> join = root.join("equipmentFunctions", JoinType.INNER);
+                return cb.equal(join.get("function").get("id"), filter.getFunctionId());
+            });
         }
 
         return spec;

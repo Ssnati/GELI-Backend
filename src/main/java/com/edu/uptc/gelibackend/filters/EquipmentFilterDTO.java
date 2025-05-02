@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EquipmentFilterDTO implements BaseFilterDTO {
-    private String equipmentName;
-    private String brand;
-    private String inventoryNumber;
+
+    private String equipmentName;    
+    private Long brandId;             
     private Long laboratoryId;
     private Boolean availability;
-    private String equipmentObservations;
+    private Long functionId;          
 }
