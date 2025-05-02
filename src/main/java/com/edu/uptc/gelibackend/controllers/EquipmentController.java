@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,7 +85,7 @@ public class EquipmentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
-    public ResponseEntity<EquipmentResponseDTO> update(@PathVariable Long id, @RequestBody EquipmentResponseDTO dto) {
+    public ResponseEntity<EquipmentResponseDTO> update(@PathVariable Long id, @RequestBody EquipmentUpdateDTO dto) {
         EquipmentResponseDTO updated = service.update(id, dto);
         return ResponseEntity.ok(updated);
     }

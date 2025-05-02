@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
@@ -30,6 +31,7 @@ public class EquipmentService {
     private final FunctionRepository functionRepo;
     private final EquipmentFunctionsRepository functionHistoryRepo;
     private final LaboratoryRepository laboratoryRepo;
+    private final BrandRepository brandRepo;
     private final EquipmentSpecification equipmentSpecification;
     private final UserRepository userRepo;
     private final EquipmentMapper mapper;
@@ -133,18 +135,29 @@ public class EquipmentService {
         }
     }
 
-    public EquipmentResponseDTO update(Long id, EquipmentResponseDTO dto) {
+    public EquipmentResponseDTO update(Long id, EquipmentUpdateDTO dto) {
         EquipmentEntity exist = equipmentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
 
-        this.validateUniqueName(dto.getEquipmentName());
-        this.validateInventoryNumber(dto.getInventoryNumber());
+        // Se valida el cambio de marca y se asigna si se hizo cambio
+        if (dto.getBrandId() != null && !dto.getBrandId().equals(exist.getBrand().getId())) {
+            exist.setBrand(brandRepo.findById(dto.getBrandId())
+                    .orElseThrow(() -> new IllegalArgumentException("Brand not found")));
+        }
 
-        exist.setEquipmentName(dto.getEquipmentName());
-//        exist.setBrand(dto.getBrand());
-        exist.setInventoryNumber(dto.getInventoryNumber());
-        exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratory().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));
+
+        // Se valida que el laboratorio exista y se asigna si se hizo cambio
+        if (dto.getLaboratoryId() != null && !dto.getLaboratoryId().equals(exist.getLaboratory().getId())) {
+            exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));
+        }
+
+        // Se maneja el cambio de estado de disponibilidad en caso de que haya cambiado
+        if (dto.getAvailability() != exist.getAvailability()) {
+            exist.setAvailability(dto.getAvailability());
+            exist.setEquipmentObservations(dto.getEquipmentObservations());
+        }
+
         EquipmentEntity updatedEntity = equipmentRepo.save(exist);
         return mapper.toResponseDTO(updatedEntity);
     }
