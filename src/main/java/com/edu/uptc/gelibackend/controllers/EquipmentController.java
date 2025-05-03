@@ -50,24 +50,23 @@ public class EquipmentController {
     private final EquipmentService service;
 
     /**
-     * Retrieve all registered laboratory equipment.
+     * Fetch all registered laboratory equipment.
      *
      * @return A list of {@link EquipmentResponseDTO} or a 204 status if no equipment is found.
      */
     @Operation(
-            summary = "Retrieve all equipments",
+            summary = "Fetch all equipments",
             description = """
                     Fetch a list of all registered laboratory equipments.
                     Requirements:
                     - The user must have the 'EQUIPMENT_READ' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER'.
-                    """,
-            tags = {"Equipments"}
+                    """
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Successfully retrieved the list of equipments.",
+                    description = "Successfully Fetchd the list of equipments.",
                     content = @Content(
                             array = @ArraySchema(
                                     schema = @Schema(implementation = EquipmentResponseDTO.class)
@@ -97,20 +96,19 @@ public class EquipmentController {
     }
 
     /**
-     * Retrieve specific equipment by its ID.
+     * Fetch specific equipment by its ID.
      *
      * @param id The ID of the equipment.
      * @return The {@link EquipmentResponseDTO} if found, or a 404 status if not found.
      */
     @Operation(
-            summary = "Retrieve equipment by ID",
-            description = "Fetch a specific equipment by its unique ID.",
-            tags = {"Equipments"}
+            summary = "Fetch equipment by ID",
+            description = "Fetch a specific equipment by its unique ID."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Successfully retrieved the equipment.",
+                    description = "Successfully Fetchd the equipment.",
                     content = @Content(schema = @Schema(implementation = EquipmentResponseDTO.class))
             ),
             @ApiResponse(
@@ -133,8 +131,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Check equipment existence by inventory number",
-            description = "Verify if an equipment exists using its inventory number.",
-            tags = {"Equipments"}
+            description = "Verify if an equipment exists using its inventory number."
     )
     @ApiResponse(
             responseCode = "200",
@@ -155,8 +152,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Check equipment existence by name",
-            description = "Verify if an equipment exists using its name.",
-            tags = {"Equipments"}
+            description = "Verify if an equipment exists using its name."
     )
     @ApiResponse(
             responseCode = "200",
@@ -177,8 +173,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Create a new equipment",
-            description = "Add a new equipment to the system.",
-            tags = {"Equipments"}
+            description = "Add a new equipment to the system."
     )
     @ApiResponse(
             responseCode = "201",
@@ -201,8 +196,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Update an existing equipment",
-            description = "Modify the details of an existing equipment.",
-            tags = {"Equipments"}
+            description = "Modify the details of an existing equipment."
     )
     @ApiResponse(
             responseCode = "200",
@@ -225,7 +219,7 @@ public class EquipmentController {
     @Operation(
             summary = "Filter equipments",
             description = """
-                    Retrieve a list of equipments based on specific filter criteria.
+                    Fetch a list of equipments based on specific filter criteria.
                     The filter can include the following attributes:
                     - `equipmentName` (String): The name of the equipment.
                     - `brandId` (Long): The ID of the brand.
@@ -236,12 +230,11 @@ public class EquipmentController {
                     Requirements:
                         - The user must have the 'EQUIPMENT_READ' authority.
                         - The user must have the role 'QUALITY-ADMIN-USER'.
-                    """,
-            tags = {"Equipments"}
+                    """
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved the filtered list of equipments.",
+            description = "Successfully Fetchd the filtered list of equipments.",
             content = @Content(
                     array = @ArraySchema(
                             schema = @Schema(implementation = EquipmentResponseDTO.class)
