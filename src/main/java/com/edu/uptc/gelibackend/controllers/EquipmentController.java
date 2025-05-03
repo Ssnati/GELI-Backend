@@ -3,8 +3,8 @@ package com.edu.uptc.gelibackend.controllers;
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
-import com.edu.uptc.gelibackend.services.EquipmentService;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
+import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Controller for managing laboratory equipment.
  * Provides endpoints for CRUD operations, filtering, and validation.
- * 
+ *
  * <p>Requirements:</p>
  * <ul>
  *   <li>JWT authentication is mandatory.</li>
@@ -38,11 +38,11 @@ import java.util.List;
 @RequestMapping("/api/v1/equipments")
 @RequiredArgsConstructor
 @Tag(
-        name = "Equipments",
+        name = "Equipments Management",
         description = """
-                    Equipment management API.
-                    This API provides CRUD operations and advanced filtering for laboratory equipment.
-                    """
+                Complete management of laboratory equipment.
+                This API provides CRUD operations and advanced filtering for laboratory equipment.
+                """
 )
 @PreAuthorize("hasRole('QUALITY-ADMIN-USER')")
 public class EquipmentController {
@@ -51,7 +51,7 @@ public class EquipmentController {
 
     /**
      * Retrieve all registered laboratory equipment.
-     * 
+     *
      * @return A list of {@link EquipmentResponseDTO} or a 204 status if no equipment is found.
      */
     @Operation(
@@ -98,7 +98,7 @@ public class EquipmentController {
 
     /**
      * Retrieve specific equipment by its ID.
-     * 
+     *
      * @param id The ID of the equipment.
      * @return The {@link EquipmentResponseDTO} if found, or a 404 status if not found.
      */
@@ -127,7 +127,7 @@ public class EquipmentController {
 
     /**
      * Check if equipment exists by its inventory number.
-     * 
+     *
      * @param inventoryNumber The inventory number to check.
      * @return True if the equipment exists, false otherwise.
      */
@@ -149,7 +149,7 @@ public class EquipmentController {
 
     /**
      * Check if equipment exists by its name.
-     * 
+     *
      * @param equipmentName The name of the equipment to check.
      * @return True if the equipment exists, false otherwise.
      */
@@ -171,7 +171,7 @@ public class EquipmentController {
 
     /**
      * Create a new equipment.
-     * 
+     *
      * @param dto The {@link EquipmentCreationDTO} containing the equipment details.
      * @return The created {@link EquipmentResponseDTO}.
      */
@@ -194,7 +194,7 @@ public class EquipmentController {
 
     /**
      * Update an existing equipment.
-     * 
+     *
      * @param id  The ID of the equipment to update.
      * @param dto The {@link EquipmentUpdateDTO} containing the updated details.
      * @return The updated {@link EquipmentResponseDTO}.
@@ -218,13 +218,25 @@ public class EquipmentController {
 
     /**
      * Filter equipment based on specific criteria.
-     * 
+     *
      * @param filter The {@link EquipmentFilterDTO} containing the filter criteria.
      * @return A list of {@link EquipmentResponseDTO} matching the criteria.
      */
     @Operation(
             summary = "Filter equipments",
-            description = "Retrieve a list of equipments that match the specified filter criteria.",
+            description = """
+                    Retrieve a list of equipments based on specific filter criteria.
+                    The filter can include the following attributes:
+                    - `equipmentName` (String): The name of the equipment.
+                    - `brandId` (Long): The ID of the brand.
+                    - `laboratoryId` (Long): The ID of the laboratory.
+                    - `availability` (Boolean): The availability status of the equipment.
+                    - `functionId` (Long): The ID of the function.
+                    The filter is optional, and you can provide any combination of the above attributes.
+                    Requirements:
+                        - The user must have the 'EQUIPMENT_READ' authority.
+                        - The user must have the role 'QUALITY-ADMIN-USER'.
+                    """,
             tags = {"Equipments"}
     )
     @ApiResponse(
