@@ -61,8 +61,7 @@ public class EquipmentController {
                     Requirements:
                     - The user must have the 'EQUIPMENT_READ' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER'.
-                    """,
-            tags = {"Equipments"}
+                    """
     )
     @ApiResponses({
             @ApiResponse(
@@ -104,8 +103,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Retrieve equipment by ID",
-            description = "Fetch a specific equipment by its unique ID.",
-            tags = {"Equipments"}
+            description = "Fetch a specific equipment by its unique ID."
     )
     @ApiResponses({
             @ApiResponse(
@@ -133,8 +131,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Check equipment existence by inventory number",
-            description = "Verify if an equipment exists using its inventory number.",
-            tags = {"Equipments"}
+            description = "Verify if an equipment exists using its inventory number."
     )
     @ApiResponse(
             responseCode = "200",
@@ -155,8 +152,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Check equipment existence by name",
-            description = "Verify if an equipment exists using its name.",
-            tags = {"Equipments"}
+            description = "Verify if an equipment exists using its name."
     )
     @ApiResponse(
             responseCode = "200",
@@ -177,8 +173,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Create a new equipment",
-            description = "Add a new equipment to the system.",
-            tags = {"Equipments"}
+            description = "Add a new equipment to the system."
     )
     @ApiResponse(
             responseCode = "201",
@@ -201,8 +196,7 @@ public class EquipmentController {
      */
     @Operation(
             summary = "Update an existing equipment",
-            description = "Modify the details of an existing equipment.",
-            tags = {"Equipments"}
+            description = "Modify the details of an existing equipment."
     )
     @ApiResponse(
             responseCode = "200",
@@ -236,8 +230,7 @@ public class EquipmentController {
                     Requirements:
                         - The user must have the 'EQUIPMENT_READ' authority.
                         - The user must have the role 'QUALITY-ADMIN-USER'.
-                    """,
-            tags = {"Equipments"}
+                    """
     )
     @ApiResponse(
             responseCode = "200",
