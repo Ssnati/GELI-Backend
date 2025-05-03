@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,27 +27,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/equipments")
 @RequiredArgsConstructor
+@Tag(
+        name = "Equipments",
+        description = """
+                    Equipment management API.
+                    This API provides CRUD operations and advanced filtering for laboratory equipment.
+                    Requirements:
+                    - JWT authentication is mandatory.
+                    - Specific permissions are required for each operation:
+                      - 'EQUIPMENT_READ' for read operations.
+                      - 'EQUIPMENT_WRITE' for write operations.
+                    - The user must have the role 'QUALITY-ADMIN-USER'.
+                """
+)
 @PreAuthorize("hasRole('QUALITY-ADMIN-USER')")
 public class EquipmentController {
 
     private final EquipmentService service;
 
-    /**
-     * Obtiene todos los equipos registrados en el sistema.
-     *
-     * @return Lista de equipos con respuesta HTTP 200, o 204 si no hay contenido
-     */
     @Operation(
-            summary = "Obtener todos los equipos",
-            description = "Recupera todos los equipos disponibles en el sistema. Requiere permiso de lectura."
+            summary = "Get all equipments",
+            description = "Retrieve a list of all registered equipments. Requires 'EQUIPMENT_READ' permission."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Equipos encontrados",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = EquipmentResponseDTO.class)))
+                    description = "List of equipments",
+                    content = @Content(
+                            array = @ArraySchema(
+                                    schema = @Schema(
+                                            implementation = EquipmentResponseDTO.class)))
             ),
-            @ApiResponse(responseCode = "204", description = "No hay equipos registrados")
+            @ApiResponse(responseCode = "204", description = "No equipments found"),
     })
     @GetMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
