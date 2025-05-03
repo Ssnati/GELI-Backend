@@ -51,7 +51,7 @@ public class EquipmentService {
 
     @Transactional
     public EquipmentResponseDTO create(EquipmentCreationDTO dto) {
-        this.validateUniqueName(dto.getEquipmentName());
+//        this.validateUniqueName(dto.getEquipmentName());
         this.validateInventoryNumber(dto.getInventoryNumber());
         this.validateBrandExistence(dto.getBrand().getId());
 
