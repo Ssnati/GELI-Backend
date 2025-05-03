@@ -52,11 +52,6 @@ public class EquipmentUseEntity {
     @ToString.Exclude
     private List<EquipmentFunctionsUsedEntity> equipmentFunctionsUsedList;
 
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private ApplicantEntity applicant;
-
     @Column(name = "observations")
     private String observations;
 }

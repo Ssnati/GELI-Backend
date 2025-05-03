@@ -18,7 +18,6 @@ public class EquipmentUseResponseDTO {
     private Boolean status;
     private EquipmentResponseDTO equipment;
     private UserResponseDTO user;
-    private ApplicantDTO applicant;
     private int samplesNumber;
     private List<FunctionDTO> usedFunctions;
     private String observations;

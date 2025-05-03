@@ -23,7 +23,6 @@ public class EquipmentUseService {
 
     private final UserRepository userRepo;
     private final EquipmentRepository equipmentRepo;
-    private final ApplicantRepository applicantRepo;
     private final FunctionRepository functionRepo;
     private final EquipmentUseMapper mapper;
 
@@ -45,9 +44,6 @@ public class EquipmentUseService {
         if (equipmentUseDTO.getEquipmentId() == null) {
             throw new IllegalArgumentException("Equipment ID cannot be null");
         }
-        if (equipmentUseDTO.getApplicantId() == null) {
-            throw new IllegalArgumentException("Applicant ID cannot be null");
-        }
     }
 
     private EquipmentUseEntity buildEquipmentUseEntity(EquipmentUseDTO equipmentUseDTO) {
@@ -56,7 +52,6 @@ public class EquipmentUseService {
         entity.setUser(findUserById(equipmentUseDTO.getUserId()));
         EquipmentEntity equipmentEntity = findEquipmentById(equipmentUseDTO.getEquipmentId());
         entity.setEquipment(equipmentEntity);
-        entity.setApplicant(findApplicantById(equipmentUseDTO.getApplicantId()));
 
         List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentUseDTO, equipmentEntity);
         assignFunctionsToEntity(entity, functionEntityList);
@@ -73,10 +68,6 @@ public class EquipmentUseService {
 
     private EquipmentEntity findEquipmentById(Long equipmentId) {
         return equipmentRepo.findById(equipmentId).orElseThrow(() -> new IllegalArgumentException("Equipment with ID " + equipmentId + " not found"));
-    }
-
-    private ApplicantEntity findApplicantById(Long applicantId) {
-        return applicantRepo.findById(applicantId).orElseThrow(() -> new IllegalArgumentException("Applicant with ID " + applicantId + " not found"));
     }
 
     private List<FunctionEntity> findFunctionById(List<Long> usedFunctions) {

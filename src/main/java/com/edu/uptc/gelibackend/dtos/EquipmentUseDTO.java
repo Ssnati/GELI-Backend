@@ -13,7 +13,6 @@ public class EquipmentUseDTO {
     private Boolean status;
     private Long equipmentId;
     private Long userId;
-    private Long applicantId;
     private int samplesNumber;
     private List<Long> usedFunctions;
     private String observations;

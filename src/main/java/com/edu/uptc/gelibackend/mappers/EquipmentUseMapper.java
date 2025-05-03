@@ -13,7 +13,6 @@ public class EquipmentUseMapper {
 
     private final EquipmentMapper equipmentMapper;
     private final UserMapper userMapper;
-    private final ApplicantMapper applicantMapper;
     private final FunctionMapper functionMapper;
 
     public EquipmentUseResponseDTO toResponseDTO(EquipmentUseDTO equipmentUseDTO) {
@@ -30,7 +29,6 @@ public class EquipmentUseMapper {
                 .status(equipmentUseEntity.getStatus())
                 .equipment(equipmentMapper.toResponseDTO(equipmentUseEntity.getEquipment()))
                 .user(userMapper.completeDTOWithEntity(new UserResponseDTO(), equipmentUseEntity.getUser()))
-                .applicant(applicantMapper.toDTO(equipmentUseEntity.getApplicant()))
                 .usedFunctions(functionMapper.equipmentFunctionsUsedToDTOs(equipmentUseEntity.getEquipmentFunctionsUsedList()))
                 .samplesNumber(equipmentUseEntity.getSamplesNumber())
                 .observations(equipmentUseEntity.getObservations())
