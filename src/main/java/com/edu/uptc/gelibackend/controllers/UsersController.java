@@ -1,5 +1,6 @@
 package com.edu.uptc.gelibackend.controllers;
 
+import com.edu.uptc.gelibackend.dtos.UserAuthorizedEquipmentsUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
@@ -74,4 +75,15 @@ public class UsersController {
         List<UserResponseDTO> filtered = userService.filter(filter);
         return filtered.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(filtered);
     }
+
+    @PutMapping("/{id}/authorized-equipments")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('USER_WRITE')")
+    public ResponseEntity<Void> updateAuthorizedEquipments(
+            @PathVariable Long id,
+            @RequestBody UserAuthorizedEquipmentsUpdateDTO dto
+    ) {
+        userService.updateAuthorizedEquipments(id, dto.getEquipmentIds());
+        return ResponseEntity.ok().build();
+    }
+
 }

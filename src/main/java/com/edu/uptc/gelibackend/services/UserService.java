@@ -39,6 +39,7 @@ public class UserService {
     private final UserMapper mapper;
     private final UserSpecification userSpecification;
     private final UserPositionHistoryRepository positionHistoryRepo;
+    private final AuthorizedUserEquipmentsRepo authorizedUserEquipmentsRepo;
 
     public List<UserResponseDTO> findAll() {
         List<UserEntity> userEntities = userRepo.findAll(); // asegúrate que esté con @EntityGraph para traer position
@@ -224,11 +225,11 @@ public class UserService {
 
         message.setText(
                 "¡Bienvenido a GELI!\n\n"
-                        + "Tu cuenta ha sido creada exitosamente.\n"
-                        + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
-                        + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
-                        + "Saludos,\n"
-                        + "Equipo GELI"
+                + "Tu cuenta ha sido creada exitosamente.\n"
+                + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
+                + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
+                + "Saludos,\n"
+                + "Equipo GELI"
         );
 
         mailSender.send(message);
@@ -440,6 +441,32 @@ public class UserService {
         mapper.completeDTOWithRepresentation(dto, rep);
 
         return Optional.of(dto);
+    }
+
+    @Transactional
+    public void updateAuthorizedEquipments(Long userId, List<Long> equipmentIds) {
+        UserEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Borrar relaciones actuales
+        authorizedUserEquipmentsRepo.deleteByUserId(userId);
+
+        // Crear nuevas relaciones
+        List<AuthorizedUserEquipmentsEntity> newAssignments = equipmentIds.stream()
+                .map(equipmentId -> {
+                    EquipmentEntity equipment = equipmentRepo.findById(equipmentId)
+                            .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
+
+                    AuthorizedUserEquipmentsEntity entity = new AuthorizedUserEquipmentsEntity();
+                    entity.setId(new AuthorizedUserEquipmentsId(userId, equipmentId));
+                    entity.setUser(user);
+                    entity.setEquipment(equipment);
+                    entity.setActualStatus(true);
+                    return entity;
+                })
+                .toList();
+
+        authorizedUserEquipmentsRepo.saveAll(newAssignments);
     }
 
 }
