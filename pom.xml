@@ -75,11 +75,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Keycloak Admin -->
+        <!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client -->
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
-            <version>21.1.2</version>
+            <version>26.0.5</version>
         </dependency>
 
         <!-- Resteasy para JAX-RS -->
