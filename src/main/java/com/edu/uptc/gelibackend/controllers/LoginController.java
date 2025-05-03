@@ -27,7 +27,7 @@ public class LoginController {
     @Value("${keycloak.client-id}")
     private String clientId;
 
-    private String clientSecret = System.getenv("CLIENT_SECRET");
+    private final String clientSecret = System.getenv("CLIENT_SECRET");
 
     public LoginController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
