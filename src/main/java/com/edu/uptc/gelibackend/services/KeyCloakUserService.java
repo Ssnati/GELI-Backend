@@ -7,7 +7,6 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,13 +47,6 @@ public class KeyCloakUserService {
     public Response createUser(UserRepresentation userRepresentation) {
         userRepresentation.setEnabled(true);
         userRepresentation.setEmailVerified(true);
-//        userRepresentation.setCredentials(List.of(
-//                new CredentialRepresentation() {{
-//                    setType(CredentialRepresentation.PASSWORD);
-//                    setValue(userRepresentation.getCredentials().get(0).getValue());
-//                    setTemporary(true);
-//                }}
-//        ));
         return keyCloakProvider.realm(REALM).users().create(userRepresentation);
     }
 

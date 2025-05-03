@@ -1,15 +1,16 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.edu.uptc.gelibackend.services.KeycloakAdminService;
+import com.edu.uptc.gelibackend.services.RecoveryCodeService;
 import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import com.edu.uptc.gelibackend.services.KeycloakAdminService;
-import com.edu.uptc.gelibackend.services.RecoveryCodeService;
 
 import java.time.LocalDateTime;
 import java.util.List;

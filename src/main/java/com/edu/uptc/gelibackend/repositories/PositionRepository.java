@@ -4,7 +4,6 @@ import com.edu.uptc.gelibackend.entities.PositionEntity;
 
 import java.util.Optional;
 
-import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

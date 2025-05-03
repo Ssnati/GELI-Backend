@@ -1,21 +1,15 @@
 package com.edu.uptc.gelibackend.services;
 
-import com.edu.uptc.gelibackend.dtos.PositionDTO;
-import com.edu.uptc.gelibackend.dtos.PositionHistoryDTO;
-import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
-import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
-import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
+import com.edu.uptc.gelibackend.dtos.*;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
+import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.mappers.UserMapper;
 import com.edu.uptc.gelibackend.repositories.*;
-import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import com.edu.uptc.gelibackend.utils.KeyCloakUtils;
-
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

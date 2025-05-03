@@ -2,7 +2,6 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.BrandDTO;
 import com.edu.uptc.gelibackend.services.BrandService;
-import com.edu.uptc.gelibackend.services.FunctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
