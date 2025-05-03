@@ -36,6 +36,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     private String resourceIdClaimName;
 
     @Override
+    @NonNull
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         this.validateResourceIdClaim();
         Collection<GrantedAuthority> authorities = new ArrayList<>(jwtConverter.convert(jwt));
