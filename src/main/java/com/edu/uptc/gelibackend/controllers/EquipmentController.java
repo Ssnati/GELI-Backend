@@ -20,9 +20,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador para la gestión de equipos de laboratorio.
- * Proporciona operaciones CRUD y filtrado avanzado de equipos.
- * Requiere autenticación JWT y permisos específicos para cada operación.
+ * Controller for managing laboratory equipment.
+ * Provides endpoints for CRUD operations, filtering, and validation.
+ * 
+ * <p>Requirements:</p>
+ * <ul>
+ *   <li>JWT authentication is mandatory.</li>
+ *   <li>Specific permissions are required for each operation:</li>
+ *   <ul>
+ *     <li>'EQUIPMENT_READ' for read operations.</li>
+ *     <li>'EQUIPMENT_WRITE' for write operations.</li>
+ *   </ul>
+ *   <li>The user must have the role 'QUALITY-ADMIN-USER'.</li>
+ * </ul>
  */
 @RestController
 @RequestMapping("/api/v1/equipments")
@@ -32,33 +42,52 @@ import java.util.List;
         description = """
                     Equipment management API.
                     This API provides CRUD operations and advanced filtering for laboratory equipment.
-                    Requirements:
-                    - JWT authentication is mandatory.
-                    - Specific permissions are required for each operation:
-                      - 'EQUIPMENT_READ' for read operations.
-                      - 'EQUIPMENT_WRITE' for write operations.
-                    - The user must have the role 'QUALITY-ADMIN-USER'.
-                """
+                    """
 )
 @PreAuthorize("hasRole('QUALITY-ADMIN-USER')")
 public class EquipmentController {
 
     private final EquipmentService service;
 
+    /**
+     * Retrieve all registered laboratory equipment.
+     * 
+     * @return A list of {@link EquipmentResponseDTO} or a 204 status if no equipment is found.
+     */
     @Operation(
-            summary = "Get all equipments",
-            description = "Retrieve a list of all registered equipments. Requires 'EQUIPMENT_READ' permission."
+            summary = "Retrieve all equipments",
+            description = """
+                    Fetch a list of all registered laboratory equipments.
+                    Requirements:
+                    - The user must have the 'EQUIPMENT_READ' authority.
+                    - The user must have the role 'QUALITY-ADMIN-USER'.
+                    """,
+            tags = {"Equipments"}
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "List of equipments",
+                    description = "Successfully retrieved the list of equipments.",
                     content = @Content(
                             array = @ArraySchema(
-                                    schema = @Schema(
-                                            implementation = EquipmentResponseDTO.class)))
+                                    schema = @Schema(implementation = EquipmentResponseDTO.class)
+                            )
+                    )
             ),
-            @ApiResponse(responseCode = "204", description = "No equipments found"),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "No equipments found."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized. The user is not authenticated.",
+                    content = @Content(schema = @Schema())
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden. The user does not have the required permissions.",
+                    content = @Content(schema = @Schema())
+            )
     })
     @GetMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
@@ -67,6 +96,28 @@ public class EquipmentController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
+    /**
+     * Retrieve specific equipment by its ID.
+     * 
+     * @param id The ID of the equipment.
+     * @return The {@link EquipmentResponseDTO} if found, or a 404 status if not found.
+     */
+    @Operation(
+            summary = "Retrieve equipment by ID",
+            description = "Fetch a specific equipment by its unique ID.",
+            tags = {"Equipments"}
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved the equipment.",
+                    content = @Content(schema = @Schema(implementation = EquipmentResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Equipment not found."
+            )
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
     public ResponseEntity<EquipmentResponseDTO> getById(@PathVariable Long id) {
@@ -74,6 +125,21 @@ public class EquipmentController {
         return equipment != null ? ResponseEntity.ok(equipment) : ResponseEntity.notFound().build();
     }
 
+    /**
+     * Check if equipment exists by its inventory number.
+     * 
+     * @param inventoryNumber The inventory number to check.
+     * @return True if the equipment exists, false otherwise.
+     */
+    @Operation(
+            summary = "Check equipment existence by inventory number",
+            description = "Verify if an equipment exists using its inventory number.",
+            tags = {"Equipments"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully checked the existence of the equipment."
+    )
     @GetMapping("/exists-by-inventory-number")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
     public ResponseEntity<Boolean> existsByInventoryNumber(@RequestParam String inventoryNumber) {
@@ -81,6 +147,21 @@ public class EquipmentController {
         return ResponseEntity.ok(exists);
     }
 
+    /**
+     * Check if equipment exists by its name.
+     * 
+     * @param equipmentName The name of the equipment to check.
+     * @return True if the equipment exists, false otherwise.
+     */
+    @Operation(
+            summary = "Check equipment existence by name",
+            description = "Verify if an equipment exists using its name.",
+            tags = {"Equipments"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully checked the existence of the equipment."
+    )
     @GetMapping("/exists-by-name")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
     public ResponseEntity<Boolean> existsByName(@RequestParam String equipmentName) {
@@ -88,6 +169,22 @@ public class EquipmentController {
         return ResponseEntity.ok(exists);
     }
 
+    /**
+     * Create a new equipment.
+     * 
+     * @param dto The {@link EquipmentCreationDTO} containing the equipment details.
+     * @return The created {@link EquipmentResponseDTO}.
+     */
+    @Operation(
+            summary = "Create a new equipment",
+            description = "Add a new equipment to the system.",
+            tags = {"Equipments"}
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "Successfully created the equipment.",
+            content = @Content(schema = @Schema(implementation = EquipmentResponseDTO.class))
+    )
     @PostMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
     public ResponseEntity<EquipmentResponseDTO> create(@RequestBody EquipmentCreationDTO dto) {
@@ -95,6 +192,23 @@ public class EquipmentController {
         return ResponseEntity.status(201).body(created);
     }
 
+    /**
+     * Update an existing equipment.
+     * 
+     * @param id  The ID of the equipment to update.
+     * @param dto The {@link EquipmentUpdateDTO} containing the updated details.
+     * @return The updated {@link EquipmentResponseDTO}.
+     */
+    @Operation(
+            summary = "Update an existing equipment",
+            description = "Modify the details of an existing equipment.",
+            tags = {"Equipments"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully updated the equipment.",
+            content = @Content(schema = @Schema(implementation = EquipmentResponseDTO.class))
+    )
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
     public ResponseEntity<EquipmentResponseDTO> update(@PathVariable Long id, @RequestBody EquipmentUpdateDTO dto) {
@@ -102,7 +216,26 @@ public class EquipmentController {
         return ResponseEntity.ok(updated);
     }
 
-
+    /**
+     * Filter equipment based on specific criteria.
+     * 
+     * @param filter The {@link EquipmentFilterDTO} containing the filter criteria.
+     * @return A list of {@link EquipmentResponseDTO} matching the criteria.
+     */
+    @Operation(
+            summary = "Filter equipments",
+            description = "Retrieve a list of equipments that match the specified filter criteria.",
+            tags = {"Equipments"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the filtered list of equipments.",
+            content = @Content(
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = EquipmentResponseDTO.class)
+                    )
+            )
+    )
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
     public ResponseEntity<List<EquipmentResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter) {
