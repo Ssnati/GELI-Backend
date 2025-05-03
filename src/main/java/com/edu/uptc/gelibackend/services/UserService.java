@@ -40,6 +40,8 @@ public class UserService {
     private final UserSpecification userSpecification;
     private final UserPositionHistoryRepository positionHistoryRepo;
     private final AuthorizedUserEquipmentsRepo authorizedUserEquipmentsRepo;
+    private final JavaMailSender mailSender; // Para enviar correos
+
 
     public List<UserResponseDTO> findAll() {
         List<UserEntity> userEntities = userRepo.findAll(); // asegúrate que esté con @EntityGraph para traer position
@@ -214,9 +216,6 @@ public class UserService {
             throw new RuntimeException("Error creating user in Keycloak", e);
         }
     }
-
-    @Autowired
-    private JavaMailSender mailSender;
 
     private void sendWelcomeEmail(String toEmail, String password) {
         SimpleMailMessage message = new SimpleMailMessage();

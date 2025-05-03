@@ -1,5 +1,6 @@
 package com.edu.uptc.gelibackend.services;
 
+import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -18,10 +19,10 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class KeyCloakUserService {
 
-    @Autowired
-    private Keycloak keyCloakProvider;
+    private final Keycloak keyCloakProvider;
 
     @Value("${keycloak.realm}")
     private String REALM;
