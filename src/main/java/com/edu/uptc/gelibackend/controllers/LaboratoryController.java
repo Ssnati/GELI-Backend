@@ -220,7 +220,6 @@ public class LaboratoryController {
             summary = "Filter laboratories",
             description = """
                     Fetch a list of laboratories based on specific filter criteria.
-                                
                     The filter can include the following attributes:
                     - `laboratoryName` (String): The name of the laboratory.
                     - `laboratoryAvailability` (Boolean): Indicates whether the laboratory is available.

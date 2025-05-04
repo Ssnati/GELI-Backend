@@ -195,8 +195,7 @@ public class EquipmentUseController {
     @Operation(
             summary = "Filter equipment usage records",
             description = """
-                    Fetch a list of equipment usage records based on specific filter criteria.
-                                
+                    Fetch a list of equipment usage records based on specific filter criteria.                                
                     The filter can include the following attributes:
                     - `isInUse` (Boolean): Indicates whether the equipment is currently in use.
                     - `isVerified` (Boolean): Indicates whether the equipment usage has been verified.
