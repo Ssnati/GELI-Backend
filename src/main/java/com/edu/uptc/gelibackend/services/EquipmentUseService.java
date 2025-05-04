@@ -16,8 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,8 +62,7 @@ public class EquipmentUseService {
         List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentUseDTO, equipmentEntity);
         assignFunctionsToEntity(entity, functionEntityList);
 
-        entity.setUseDate(LocalDate.now());
-        entity.setStartUseTime(LocalTime.now());
+        entity.setStartUseTime(LocalDateTime.now());
 
         return entity;
     }
@@ -105,7 +103,7 @@ public class EquipmentUseService {
     public Optional<EquipmentUseResponseDTO> endEquipmentUse(Long id) {
         EquipmentUseEntity equipmentUseEntity = validateEquipmentUseIsAlreadyStarted(id);
 
-        equipmentUseEntity.setEndUseTime(LocalTime.now());
+        equipmentUseEntity.setEndUseTime(LocalDateTime.now());
         equipmentUseEntity.setIsInUse(false);
         equipmentUseRepo.save(equipmentUseEntity);
 

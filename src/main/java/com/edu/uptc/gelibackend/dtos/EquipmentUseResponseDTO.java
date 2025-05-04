@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -23,7 +22,6 @@ public class EquipmentUseResponseDTO {
     private int samplesNumber;
     private List<FunctionDTO> usedFunctions;
     private String observations;
-    private LocalDate useDate;
-    private LocalTime startUseTime;
-    private LocalTime endUseTime;
+    private LocalDateTime startUseTime;
+    private LocalDateTime endUseTime;
 }

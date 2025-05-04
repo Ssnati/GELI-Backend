@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,8 +20,8 @@ public class EquipmentUseFilterDTO implements BaseFilterDTO {
     private int samplesNumberFrom;
     private int samplesNumberTo;
     private List<Long> usedFunctionsIds;
-    private LocalDate useDateFrom;
-    private LocalDate useDateTo;
-    private LocalTime startUseTimeFrom;
-    private LocalTime endUseTimeTo;
+    private LocalDateTime useDateFrom;
+    private LocalDateTime useDateTo;
+    private LocalDateTime startUseTimeFrom;
+    private LocalDateTime endUseTimeTo;
 }

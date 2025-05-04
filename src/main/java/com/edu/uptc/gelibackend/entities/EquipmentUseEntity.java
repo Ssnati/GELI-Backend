@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -30,15 +29,11 @@ public class EquipmentUseEntity {
     private UserEntity user;
 
     @NotNull
-    @Column(name = "use_date", nullable = false)
-    private LocalDate useDate;
+    @Column(name = "start_use_datetime", nullable = false)
+    private LocalDateTime startUseTime;
 
-    @NotNull
-    @Column(name = "start_use_time", nullable = false)
-    private LocalTime startUseTime;
-
-    @Column(name = "end_use_time")
-    private LocalTime endUseTime;
+    @Column(name = "end_use_datetime")
+    private LocalDateTime endUseTime;
 
     @NotNull // Indica si el equipo está actualmente en uso (true) o si ya finalizó su uso (false)
     @Column(name = "status_in_use", nullable = false)

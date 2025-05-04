@@ -36,7 +36,8 @@ public class EquipmentUseMapper {
                 .usedFunctions(functionMapper.equipmentFunctionsUsedToDTOs(equipmentUseEntity.getEquipmentFunctionsUsedList()))
                 .samplesNumber(equipmentUseEntity.getSamplesNumber())
                 .observations(equipmentUseEntity.getObservations())
-                .useDate(equipmentUseEntity.getUseDate())
+                .startUseTime(equipmentUseEntity.getStartUseTime())
+                .endUseTime(equipmentUseEntity.getEndUseTime())
                 .startUseTime(equipmentUseEntity.getStartUseTime())
                 .endUseTime(equipmentUseEntity.getEndUseTime())
                 .build();

@@ -35,11 +35,11 @@ public class EquipmentUseSpecification extends BaseSpecification<EquipmentUseEnt
         }
         if (equipmentUseFilter.getUseDateFrom() != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.greaterThanOrEqualTo(root.get("useDate"), equipmentUseFilter.getUseDateFrom()));
+                    cb.greaterThanOrEqualTo(root.get("startUseTime"), equipmentUseFilter.getUseDateFrom()));
         }
         if (equipmentUseFilter.getUseDateTo() != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("useDate"), equipmentUseFilter.getUseDateTo()));
+                    cb.lessThanOrEqualTo(root.get("startUseTime"), equipmentUseFilter.getUseDateTo()));
         }
         if (equipmentUseFilter.getStartUseTimeFrom() != null) {
             spec = spec.and((root, query, cb) ->
