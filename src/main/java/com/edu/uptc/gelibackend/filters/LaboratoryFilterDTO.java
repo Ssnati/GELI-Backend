@@ -13,4 +13,6 @@ public class LaboratoryFilterDTO implements BaseFilterDTO {
     private Long locationId;
     private String laboratoryDescription;
     private String laboratoryObservations;
+    private Integer equipmentCountFrom;
+    private Integer equipmentCountTo;
 }

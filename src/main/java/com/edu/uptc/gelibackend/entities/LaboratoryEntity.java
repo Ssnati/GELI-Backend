@@ -2,10 +2,9 @@ package com.edu.uptc.gelibackend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -37,4 +36,8 @@ public class LaboratoryEntity {
 
     @Column(name = "laboratory_observations")
     private String laboratoryObservations; // Observaciones del laboratorio
+
+    @OneToMany(mappedBy = "laboratory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private List<EquipmentEntity> equipmentList; // Relación con la tabla Equipment
 }

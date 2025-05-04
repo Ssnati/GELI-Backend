@@ -36,6 +36,14 @@ public class LaboratorySpecification extends BaseSpecification<LaboratoryEntity,
                     cb.like(cb.lower(root.get("laboratoryObservations")), "%" + filter.getLaboratoryObservations().toLowerCase() + "%"));
         }
 
+        if (filter.getEquipmentCountFrom() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(cb.size(root.join("equipmentList")), filter.getEquipmentCountFrom()));
+        }
+        if (filter.getEquipmentCountTo() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(cb.size(root.join("equipmentList")), filter.getEquipmentCountTo()));
+        }
         return spec;
     }
 }
