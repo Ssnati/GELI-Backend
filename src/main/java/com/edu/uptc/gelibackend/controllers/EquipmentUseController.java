@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
+import com.edu.uptc.gelibackend.filters.EquipmentUseFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentUseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,7 +21,7 @@ import java.util.Optional;
 
 /**
  * Controller for managing the use of laboratory equipment.
- * Provides endpoints for starting, ending, and retrieving equipment usage records.
+ * Provides endpoints for starting, ending, filtering, and retrieving equipment usage records.
  *
  * <p>Requirements:</p>
  * <ul>
@@ -40,7 +41,7 @@ import java.util.Optional;
         name = "Equipment Use Management",
         description = """
                 Management of laboratory equipment usage.
-                This API provides endpoints for starting, ending, and retrieving equipment usage records.
+                This API provides endpoints for starting, ending, filtering, and retrieving equipment usage records.
                 """
 )
 @PreAuthorize("hasRole('QUALITY-ADMIN-USER') or hasRole('AUTHORIZED-USER')")
@@ -181,5 +182,60 @@ public class EquipmentUseController {
     public ResponseEntity<EquipmentUseResponseDTO> getEquipmentUse(@PathVariable Long id) {
         Optional<EquipmentUseResponseDTO> response = service.getEquipmentUse(id);
         return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Filter equipment usage records based on specific criteria.
+     *
+     * @param filter The {@link EquipmentUseFilterDTO} containing the filter criteria.
+     * @return A list of {@link EquipmentUseResponseDTO} matching the criteria, or a 204 status if no records are found.
+     */
+    @Operation(
+            summary = "Filter equipment usage records",
+            description = """
+                    Fetch a list of equipment usage records based on specific filter criteria.
+                                
+                    The filter can include the following attributes:
+                    - `isInUse` (Boolean): Indicates whether the equipment is currently in use.
+                    - `isVerified` (Boolean): Indicates whether the equipment usage has been verified.
+                    - `isAvailable` (Boolean): Indicates whether the equipment is available for use.
+                    - `equipmentId` (Long): The ID of the equipment.
+                    - `userId` (Long): The ID of the user who used the equipment.
+                    - `laboratoryId` (Long): The ID of the laboratory where the equipment is located.
+                    - `samplesNumberFrom` (Integer): The minimum number of samples processed during the equipment usage.
+                    - `samplesNumberTo` (Integer): The maximum number of samples processed during the equipment usage.
+                    - `usedFunctionsIds` (List<Long>): A list of IDs representing the functions used during the equipment usage.
+                    - `useDateFrom` (LocalDate): The start date of the usage period (ISO format).
+                    - `useDateTo` (LocalDate): The end date of the usage period (ISO format).
+                    - `startUseTimeFrom` (LocalTime): The start time of the usage period (ISO format).
+                    - `endUseTimeTo` (LocalTime): The end time of the usage period (ISO format).
+                                
+                    The filter is optional, and you can provide any combination of the above attributes.
+                                
+                    Requirements:
+                    - The user must have the 'EQUIPMENT_USE_READ' authority.
+                    - The user must have the role 'QUALITY-ADMIN-USER' or 'AUTHORIZED-USER'.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved the filtered list of equipment usage records.",
+                    content = @Content(
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = EquipmentUseResponseDTO.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "No equipment usage records found."
+            )
+    })
+    @PostMapping("/filter")
+    @PreAuthorize("hasAuthority('EQUIPMENT_USE_READ')")
+    public ResponseEntity<List<EquipmentUseResponseDTO>> filter(@RequestBody EquipmentUseFilterDTO filter) {
+        List<EquipmentUseResponseDTO> filteredList = service.filter(filter);
+        return filteredList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(filteredList);
     }
 }

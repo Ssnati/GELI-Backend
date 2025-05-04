@@ -4,9 +4,15 @@ import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsUsedId;
+import com.edu.uptc.gelibackend.filters.EquipmentUseFilterDTO;
 import com.edu.uptc.gelibackend.mappers.EquipmentUseMapper;
-import com.edu.uptc.gelibackend.repositories.*;
+import com.edu.uptc.gelibackend.repositories.EquipmentRepository;
+import com.edu.uptc.gelibackend.repositories.EquipmentUseRepository;
+import com.edu.uptc.gelibackend.repositories.FunctionRepository;
+import com.edu.uptc.gelibackend.repositories.UserRepository;
+import com.edu.uptc.gelibackend.specifications.EquipmentUseSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,7 @@ public class EquipmentUseService {
     private final EquipmentRepository equipmentRepo;
     private final FunctionRepository functionRepo;
     private final EquipmentUseMapper mapper;
+    private final EquipmentUseSpecification specification;
 
     @Transactional
     public Optional<EquipmentUseResponseDTO> startEquipmentUse(EquipmentUseDTO equipmentUseDTO) {
@@ -122,5 +129,12 @@ public class EquipmentUseService {
 
     public Optional<EquipmentUseResponseDTO> getEquipmentUse(Long id) {
         return equipmentUseRepo.findById(id).map(mapper::toResponseDTO);
+    }
+
+    public List<EquipmentUseResponseDTO> filter(EquipmentUseFilterDTO filter) {
+        Specification<EquipmentUseEntity> spec = specification.build(filter);
+        return equipmentUseRepo.findAll(spec).stream()
+                .map(mapper::toResponseDTO)
+                .toList();
     }
 }
