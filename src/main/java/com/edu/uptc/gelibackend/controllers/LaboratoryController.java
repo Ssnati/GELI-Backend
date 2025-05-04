@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/laboratories")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('QUALITY-ADMIN-USER')")
+@PreAuthorize("hasRole('QUALITY-ADMIN-USER') or hasRole('AUTHORIZED-USER')")
 public class LaboratoryController {
 
     private final LaboratoryService service;
