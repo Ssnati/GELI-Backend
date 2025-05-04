@@ -17,7 +17,9 @@ public class EquipmentUseMapper {
 
     public EquipmentUseResponseDTO toResponseDTO(EquipmentUseDTO equipmentUseDTO) {
         return EquipmentUseResponseDTO.builder()
-                .status(equipmentUseDTO.getStatus())
+                .isInUse(equipmentUseDTO.getIsInUse())
+                .isVerified(equipmentUseDTO.getIsVerified())
+                .isAvailable(equipmentUseDTO.getIsAvailable())
                 .samplesNumber(equipmentUseDTO.getSamplesNumber())
                 .observations(equipmentUseDTO.getObservations())
                 .build();
@@ -26,7 +28,9 @@ public class EquipmentUseMapper {
     public EquipmentUseResponseDTO toResponseDTO(EquipmentUseEntity equipmentUseEntity) {
         return EquipmentUseResponseDTO.builder()
                 .id(equipmentUseEntity.getId())
-                .status(equipmentUseEntity.getStatus())
+                .isInUse(equipmentUseEntity.getIsInUse())
+                .isVerified(equipmentUseEntity.getIsVerified())
+                .isAvailable(equipmentUseEntity.getIsAvailable())
                 .equipment(equipmentMapper.toResponseDTO(equipmentUseEntity.getEquipment()))
                 .user(userMapper.completeDTOWithEntity(new UserResponseDTO(), equipmentUseEntity.getUser()))
                 .usedFunctions(functionMapper.equipmentFunctionsUsedToDTOs(equipmentUseEntity.getEquipmentFunctionsUsedList()))
@@ -40,7 +44,9 @@ public class EquipmentUseMapper {
 
     public EquipmentUseEntity toEntity(EquipmentUseDTO equipmentUseDTO) {
         return EquipmentUseEntity.builder()
-                .status(equipmentUseDTO.getStatus())
+                .isInUse(equipmentUseDTO.getIsInUse())
+                .isVerified(equipmentUseDTO.getIsVerified())
+                .isAvailable(equipmentUseDTO.getIsAvailable())
                 .samplesNumber(equipmentUseDTO.getSamplesNumber())
                 .observations(equipmentUseDTO.getObservations())
                 .build();

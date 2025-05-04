@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.dtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EquipmentUseDTO {
-    private Boolean status;
+    private Boolean isInUse;
+    private Boolean isVerified;
+    private Boolean isAvailable;
     private Long equipmentId;
     private Long userId;
     private int samplesNumber;

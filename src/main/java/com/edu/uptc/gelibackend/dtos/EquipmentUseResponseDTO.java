@@ -15,7 +15,9 @@ import java.util.List;
 @Builder
 public class EquipmentUseResponseDTO {
     private Long id; // Se pasa el id porque cuando se vaya a termiar el uso se tiene que registrar a que equipo se le va a colocar la fecha de finalización
-    private Boolean status;
+    private Boolean isInUse;
+    private Boolean isVerified;
+    private Boolean isAvailable;
     private EquipmentResponseDTO equipment;
     private UserResponseDTO user;
     private int samplesNumber;

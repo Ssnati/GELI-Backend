@@ -99,6 +99,7 @@ public class EquipmentUseService {
         EquipmentUseEntity equipmentUseEntity = validateEquipmentUseIsAlreadyStarted(id);
 
         equipmentUseEntity.setEndUseTime(LocalTime.now());
+        equipmentUseEntity.setIsInUse(false);
         equipmentUseRepo.save(equipmentUseEntity);
 
         return Optional.of(mapper.toResponseDTO(equipmentUseEntity));
@@ -107,7 +108,7 @@ public class EquipmentUseService {
     private EquipmentUseEntity validateEquipmentUseIsAlreadyStarted(Long id) {
         EquipmentUseEntity equipmentUseEntity = equipmentUseRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Equipment use with ID " + id + " not found"));
-        if (equipmentUseEntity.getEndUseTime() != null) {
+        if (equipmentUseEntity.getEndUseTime() != null || !equipmentUseEntity.getIsInUse()) {
             throw new IllegalArgumentException("Equipment use with ID " + id + " is already ended");
         }
         return equipmentUseEntity;

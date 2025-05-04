@@ -40,9 +40,17 @@ public class EquipmentUseEntity {
     @Column(name = "end_use_time")
     private LocalTime endUseTime;
 
+    @NotNull // Indica si el equipo está actualmente en uso (true) o si ya finalizó su uso (false)
+    @Column(name = "status_in_use", nullable = false)
+    private Boolean isInUse;
+
     @NotNull
-    @Column(name = "status", nullable = false)
-    private Boolean status;
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
+
+    @NotNull // indica si el equipo está disponible para su uso o no
+    @Column(name = "is_available", nullable = false)
+    private Boolean isAvailable;
 
     @NotNull
     @Column(name = "samples_number", nullable = false)
