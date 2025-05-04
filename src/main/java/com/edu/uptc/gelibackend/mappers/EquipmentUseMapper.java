@@ -1,6 +1,6 @@
 package com.edu.uptc.gelibackend.mappers;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentEndUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentUseEntity;
@@ -14,16 +14,6 @@ public class EquipmentUseMapper {
     private final EquipmentMapper equipmentMapper;
     private final UserMapper userMapper;
     private final FunctionMapper functionMapper;
-
-    public EquipmentUseResponseDTO toResponseDTO(EquipmentUseDTO equipmentUseDTO) {
-        return EquipmentUseResponseDTO.builder()
-                .isInUse(equipmentUseDTO.getIsInUse())
-                .isVerified(equipmentUseDTO.getIsVerified())
-                .isAvailable(equipmentUseDTO.getIsAvailable())
-                .samplesNumber(equipmentUseDTO.getSamplesNumber())
-                .observations(equipmentUseDTO.getObservations())
-                .build();
-    }
 
     public EquipmentUseResponseDTO toResponseDTO(EquipmentUseEntity equipmentUseEntity) {
         return EquipmentUseResponseDTO.builder()
@@ -43,15 +33,11 @@ public class EquipmentUseMapper {
                 .build();
     }
 
-    public EquipmentUseEntity toEntity(EquipmentUseDTO equipmentUseDTO) {
-        return EquipmentUseEntity.builder()
-                .isInUse(equipmentUseDTO.getIsInUse())
-                .isVerified(equipmentUseDTO.getIsVerified())
-                .isAvailable(equipmentUseDTO.getIsAvailable())
-                .samplesNumber(equipmentUseDTO.getSamplesNumber())
-                .observations(equipmentUseDTO.getObservations())
-                .build();
+    public void completeEntityWithEndDTO(EquipmentUseEntity equipmentUseEntity, EquipmentEndUseDTO equipmentEndUseDTO) {
+        equipmentUseEntity.setIsInUse(equipmentEndUseDTO.getIsInUse());
+        equipmentUseEntity.setIsVerified(equipmentEndUseDTO.getIsVerified());
+        equipmentUseEntity.setIsAvailable(equipmentEndUseDTO.getIsAvailable());
+        equipmentUseEntity.setSamplesNumber(equipmentEndUseDTO.getSamplesNumber());
+        equipmentUseEntity.setObservations(equipmentEndUseDTO.getObservations());
     }
-
-
 }

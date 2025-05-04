@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentEndUseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentStartUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentUseFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentUseService;
@@ -52,7 +53,7 @@ public class EquipmentUseController {
     /**
      * Start the use of a specific equipment.
      *
-     * @param equipmentUseDTO The {@link EquipmentUseDTO} containing the details of the equipment usage.
+     * @param equipmentStartUseDTO The {@link EquipmentStartUseDTO} containing the details of the equipment usage.
      * @return The created {@link EquipmentUseResponseDTO} if successful, or a 400 status if the request is invalid.
      */
     @Operation(
@@ -77,8 +78,8 @@ public class EquipmentUseController {
     })
     @PostMapping("/start") //start
     @PreAuthorize("hasAuthority('EQUIPMENT_USE_WRITE')")
-    public ResponseEntity<EquipmentUseResponseDTO> startEquipmentUse(@RequestBody EquipmentUseDTO equipmentUseDTO) {
-        Optional<EquipmentUseResponseDTO> response = service.startEquipmentUse(equipmentUseDTO);
+    public ResponseEntity<EquipmentUseResponseDTO> startEquipmentUse(@RequestBody EquipmentStartUseDTO equipmentStartUseDTO) {
+        Optional<EquipmentUseResponseDTO> response = service.startEquipmentUse(equipmentStartUseDTO);
         return response.map(useDTO -> ResponseEntity.status(201).body(useDTO)).orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
@@ -86,6 +87,7 @@ public class EquipmentUseController {
      * End the use of a specific equipment.
      *
      * @param id The ID of the equipment usage record to end.
+     * @param equipmentEndUseDTO The {@link EquipmentEndUseDTO} containing the details to finalize the session.
      * @return The updated {@link EquipmentUseResponseDTO} if successful, or a 404 status if the record is not found.
      */
     @Operation(
@@ -104,14 +106,14 @@ public class EquipmentUseController {
                     content = @Content(schema = @Schema(implementation = EquipmentUseResponseDTO.class))
             ),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "Equipment use record not found."
+                    responseCode = "204",
+                    description = "No equipment usage records found."
             )
     })
     @PutMapping("/{id}/end")
     @PreAuthorize("hasAuthority('EQUIPMENT_USE_WRITE')")
-    public ResponseEntity<EquipmentUseResponseDTO> endEquipmentUse(@PathVariable Long id) {
-        Optional<EquipmentUseResponseDTO> response = service.endEquipmentUse(id);
+    public ResponseEntity<EquipmentUseResponseDTO> endEquipmentUse(@PathVariable Long id, @RequestBody EquipmentEndUseDTO equipmentEndUseDTO) {
+        Optional<EquipmentUseResponseDTO> response = service.endEquipmentUse(id, equipmentEndUseDTO);
         return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 

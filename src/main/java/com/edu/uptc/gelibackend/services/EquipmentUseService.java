@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentEndUseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentStartUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsUsedId;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,36 +35,38 @@ public class EquipmentUseService {
     private final EquipmentUseSpecification specification;
 
     @Transactional
-    public Optional<EquipmentUseResponseDTO> startEquipmentUse(EquipmentUseDTO equipmentUseDTO) {
-        validateEquipmentUseCreationData(equipmentUseDTO);
+    public Optional<EquipmentUseResponseDTO> startEquipmentUse(EquipmentStartUseDTO equipmentStartUseDTO) {
+        validateEquipmentUseCreationData(equipmentStartUseDTO);
 
-        EquipmentUseEntity entity = buildEquipmentUseEntity(equipmentUseDTO);
+        EquipmentUseEntity entity = buildEquipmentUseEntity(equipmentStartUseDTO);
 
         EquipmentUseEntity savedEntity = equipmentUseRepo.save(entity);
 
         return Optional.of(mapper.toResponseDTO(savedEntity));
     }
 
-    private void validateEquipmentUseCreationData(EquipmentUseDTO equipmentUseDTO) {
-        if (equipmentUseDTO.getUserId() == null) {
+    private void validateEquipmentUseCreationData(EquipmentStartUseDTO equipmentStartUseDTO) {
+        if (equipmentStartUseDTO.getUserId() == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        if (equipmentUseDTO.getEquipmentId() == null) {
+        if (equipmentStartUseDTO.getEquipmentId() == null) {
             throw new IllegalArgumentException("Equipment ID cannot be null");
         }
     }
 
-    private EquipmentUseEntity buildEquipmentUseEntity(EquipmentUseDTO equipmentUseDTO) {
-        EquipmentUseEntity entity = mapper.toEntity(equipmentUseDTO);
+    private EquipmentUseEntity buildEquipmentUseEntity(EquipmentStartUseDTO equipmentStartUseDTO) {
+        EquipmentUseEntity entity = EquipmentUseEntity.builder()
+                .isVerified(false)
+                .isAvailable(false)
+                .samplesNumber(0)
+                .equipmentFunctionsUsedList(List.of())
+                .build();
 
-        entity.setUser(findUserById(equipmentUseDTO.getUserId()));
-        EquipmentEntity equipmentEntity = findEquipmentById(equipmentUseDTO.getEquipmentId());
+        entity.setUser(findUserById(equipmentStartUseDTO.getUserId()));
+        EquipmentEntity equipmentEntity = findEquipmentById(equipmentStartUseDTO.getEquipmentId());
         entity.setEquipment(equipmentEntity);
-
-        List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentUseDTO, equipmentEntity);
-        assignFunctionsToEntity(entity, functionEntityList);
-
         entity.setStartUseTime(LocalDateTime.now());
+        entity.setIsInUse(true);
 
         return entity;
     }
@@ -79,11 +83,11 @@ public class EquipmentUseService {
         return functionRepo.findAllById(usedFunctions);
     }
 
-    private List<FunctionEntity> validateEquipmentUsedFunctions(EquipmentUseDTO equipmentUseDTO, EquipmentEntity entity) {
+    private List<FunctionEntity> validateEquipmentUsedFunctions(EquipmentEndUseDTO equipmentEndUseDTO, EquipmentEntity entity) {
         List<FunctionEntity> equipmentFunctions = entity.getEquipmentFunctions().stream()
                 .map(EquipmentFunctionsEntity::getFunction)
                 .toList();
-        List<Long> requestedFunctionsId = equipmentUseDTO.getUsedFunctions();
+        List<Long> requestedFunctionsId = equipmentEndUseDTO.getUsedFunctions();
         List<FunctionEntity> functionEntityList = findFunctionById(requestedFunctionsId);
         for (FunctionEntity function : functionEntityList) {
             if (equipmentFunctions.stream().noneMatch(equipmentFunction -> Objects.equals(equipmentFunction.getId(), function.getId()))) {
@@ -95,16 +99,20 @@ public class EquipmentUseService {
 
     private void assignFunctionsToEntity(EquipmentUseEntity entity, List<FunctionEntity> functionEntityList) {
         List<EquipmentFunctionsUsedEntity> equipmentFunctionsUsedList = functionEntityList.stream()
-                .map(function -> new EquipmentFunctionsUsedEntity(new EquipmentFunctionsUsedId(), entity, function))
+                .map(function -> new EquipmentFunctionsUsedEntity(new EquipmentFunctionsUsedId(function.getId(), entity.getId()), entity, function))
                 .toList();
-        entity.setEquipmentFunctionsUsedList(equipmentFunctionsUsedList);
+        entity.setEquipmentFunctionsUsedList(new ArrayList<>(equipmentFunctionsUsedList));
     }
 
-    public Optional<EquipmentUseResponseDTO> endEquipmentUse(Long id) {
+    public Optional<EquipmentUseResponseDTO> endEquipmentUse(Long id, EquipmentEndUseDTO equipmentEndUseDTO) {
         EquipmentUseEntity equipmentUseEntity = validateEquipmentUseIsAlreadyStarted(id);
+        mapper.completeEntityWithEndDTO(equipmentUseEntity, equipmentEndUseDTO);
 
+        List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentEndUseDTO, equipmentUseEntity.getEquipment());
+        assignFunctionsToEntity(equipmentUseEntity, functionEntityList);
         equipmentUseEntity.setEndUseTime(LocalDateTime.now());
         equipmentUseEntity.setIsInUse(false);
+
         equipmentUseRepo.save(equipmentUseEntity);
 
         return Optional.of(mapper.toResponseDTO(equipmentUseEntity));

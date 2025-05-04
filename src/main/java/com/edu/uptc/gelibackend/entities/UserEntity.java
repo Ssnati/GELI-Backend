@@ -64,6 +64,7 @@ public class UserEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @ToString.Exclude
     private List<UserStatusHistoryEntity> statusHistory = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -76,5 +77,6 @@ public class UserEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @ToString.Exclude
     private List<UserPositionHistoryEntity> positionHistory = new ArrayList<>();
 }

@@ -9,13 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EquipmentUseDTO {
-    private Boolean isInUse;
-    private Boolean isVerified;
-    private Boolean isAvailable;
+public class EquipmentStartUseDTO {
     private Long equipmentId;
     private Long userId;
-    private int samplesNumber;
-    private List<Long> usedFunctions;
-    private String observations;
 }
