@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentUseStartDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsUsedId;
 import com.edu.uptc.gelibackend.filters.EquipmentUseFilterDTO;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,6 +26,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EquipmentUseService {
+
     private final EquipmentUseRepository equipmentUseRepo;
 
     private final UserRepository userRepo;
@@ -33,14 +36,33 @@ public class EquipmentUseService {
     private final EquipmentUseSpecification specification;
 
     @Transactional
-    public Optional<EquipmentUseResponseDTO> startEquipmentUse(EquipmentUseDTO equipmentUseDTO) {
-        validateEquipmentUseCreationData(equipmentUseDTO);
+    public Optional<EquipmentUseResponseDTO> startEquipmentUse(EquipmentUseStartDTO dto) {
+        validateStartData(dto);
 
-        EquipmentUseEntity entity = buildEquipmentUseEntity(equipmentUseDTO);
+        EquipmentUseEntity entity = EquipmentUseEntity.builder()
+                .user(userRepo.findById(dto.getUserId())
+                        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado")))
+                .equipment(equipmentRepo.findById(dto.getEquipmentId())
+                        .orElseThrow(() -> new IllegalArgumentException("Equipo no encontrado")))
+                .startUseTime(LocalDateTime.now())
+                .isInUse(true)
+                .isVerified(true) // Inicialmente se asume verificado
+                .isAvailable(true) // Inicialmente disponible
+                .samplesNumber(0).equipmentFunctionsUsedList(new ArrayList<>()) // Se llenará al finalizar
+                .observations("")
+                .build();
 
-        EquipmentUseEntity savedEntity = equipmentUseRepo.save(entity);
+        EquipmentUseEntity saved = equipmentUseRepo.save(entity);
+        return Optional.of(mapper.toResponseDTO(saved));
+    }
 
-        return Optional.of(mapper.toResponseDTO(savedEntity));
+    private void validateStartData(EquipmentUseStartDTO dto) {
+        if (dto.getUserId() == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (dto.getEquipmentId() == null) {
+            throw new IllegalArgumentException("Equipment ID cannot be null");
+        }
     }
 
     private void validateEquipmentUseCreationData(EquipmentUseDTO equipmentUseDTO) {
