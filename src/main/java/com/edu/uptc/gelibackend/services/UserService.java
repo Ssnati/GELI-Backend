@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.ws.rs.core.Response;
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -218,11 +219,11 @@ public class UserService {
 
         message.setText(
                 "¡Bienvenido a GELI!\n\n"
-                + "Tu cuenta ha sido creada exitosamente.\n"
-                + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
-                + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
-                + "Saludos,\n"
-                + "Equipo GELI"
+                        + "Tu cuenta ha sido creada exitosamente.\n"
+                        + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
+                        + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
+                        + "Saludos,\n"
+                        + "Equipo GELI"
         );
 
         mailSender.send(message);
@@ -395,45 +396,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findUserByEmail(String email) {
         UserEntity entity = userRepo.findByEmail(email);
-        if (entity == null) {
-            return Optional.empty();
-        }
-
-        UserResponseDTO dto = mapper.completeDTOWithEntity(new UserResponseDTO(), entity);
-
-        // Mapeo correcto del campo position
-        PositionEntity position = entity.getPosition();
-        if (position != null) {
-            dto.setPosition(new PositionDTO(position.getId(), position.getName()));
-        }
-
-        // Obtener el historial completo de cambios de posición
-        List<UserPositionHistoryEntity> positionHistories
-                = positionHistoryRepo.findByUserIdOrderByChangeDateDesc(entity.getId());
-
-        if (positionHistories != null) {
-            positionHistories.forEach(ph -> {
-                PositionHistoryDTO historyDTO = new PositionHistoryDTO(
-                        ph.getOldPosition() != null ? ph.getOldPosition().getName() : null,
-                        ph.getNewPosition().getName(),
-                        ph.getChangeDate()
-                );
-                dto.getPositionHistory().add(historyDTO);
-            });
-        }
-
-        // Cargar el historial de estado más reciente
-        UserStatusHistoryEntity latest = historyRepo
-                .findFirstByUserIdOrderByModificationStatusDateDesc(entity.getId());
-        if (latest != null) {
-            dto.setModificationStatusDate(latest.getModificationStatusDate());
-        }
-
-        // Traer datos adicionales desde Keycloak
-        UserRepresentation rep = keyCloakUserService.getById(entity.getKeycloakId());
-        mapper.completeDTOWithRepresentation(dto, rep);
-
-        return Optional.of(dto);
+        return Optional.of(mapper.completeDTOWithEntity(new UserResponseDTO(), entity));
     }
 
     @Transactional
