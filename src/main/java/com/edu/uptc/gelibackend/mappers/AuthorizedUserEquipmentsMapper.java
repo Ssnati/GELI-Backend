@@ -26,6 +26,7 @@ public class AuthorizedUserEquipmentsMapper {
                 .laboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()))
                 .availability(equipmentEntity.getAvailability())
                 .functions(functionMapper.equipmentFunctionsToDTOs(equipmentEntity.getEquipmentFunctions()))
+                .observations(equipmentEntity.getEquipmentObservations())
                 .build();
     }
 

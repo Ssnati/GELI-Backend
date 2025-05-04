@@ -19,4 +19,5 @@ public class AuthorizedEquipmentDTO {
     private LaboratoryDTO laboratory;
     private Boolean availability;
     private List<FunctionDTO> functions;
+    private String observations;
 }
