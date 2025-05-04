@@ -100,15 +100,15 @@ public class EquipmentUseController {
                     """
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully ended the equipment use.",
-                    content = @Content(schema = @Schema(implementation = EquipmentUseResponseDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "No equipment usage records found."
-            )
+        @ApiResponse(
+                responseCode = "200",
+                description = "Successfully ended the equipment use.",
+                content = @Content(schema = @Schema(implementation = EquipmentUseResponseDTO.class))
+        ),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Equipment use record not found."
+        )
     })
     @PutMapping("/{id}/end")
     @PreAuthorize("hasAuthority('EQUIPMENT_USE_WRITE')")

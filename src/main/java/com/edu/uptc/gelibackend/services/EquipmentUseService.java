@@ -56,8 +56,8 @@ public class EquipmentUseService {
 
     private EquipmentUseEntity buildEquipmentUseEntity(EquipmentStartUseDTO equipmentStartUseDTO) {
         EquipmentUseEntity entity = EquipmentUseEntity.builder()
-                .isVerified(false)
-                .isAvailable(false)
+                .isVerified(true) // Inicialmente se asume verificado
+                .isAvailable(true)  //Inicialmente disponible
                 .samplesNumber(0)
                 .equipmentFunctionsUsedList(List.of())
                 .build();
