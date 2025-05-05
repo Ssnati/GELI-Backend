@@ -228,8 +228,7 @@ public class LaboratoryController {
                     - `laboratoryObservations` (String): Any observations related to the laboratory.
                     - `equipmentCountFrom` (Integer): The minimum number of equipment in the laboratory.
                     - `equipmentCountTo` (Integer): The maximum number of equipment in the laboratory.
-                                        
-                                
+                    
                     The filter is optional, and you can provide any combination of the above attributes.
                                 
                     Requirements:
