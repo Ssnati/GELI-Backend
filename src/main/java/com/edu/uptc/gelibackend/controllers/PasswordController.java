@@ -1,5 +1,12 @@
 package com.edu.uptc.gelibackend.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -11,22 +18,60 @@ import com.edu.uptc.gelibackend.services.RecoveryCodeService;
 
 import java.util.Map;
 
+/**
+ * <p>Requirements:</p>
+ * <ul>
+ *   <li>JWT authentication is mandatory for validation and change operations.</li>
+ *   <li>Temporary tokens are required for password reset operations.</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/api/password")
+@RequiredArgsConstructor
+@Tag(
+        name = "Password Management",
+        description = """
+                Management of user passwords.
+                This API provides endpoints for validating, changing, and resetting passwords.
+                """
+)
 public class PasswordController {
 
     private final RestTemplate restTemplate;
     private final KeycloakAdminService keycloakAdminService;
     private final RecoveryCodeService recoveryCodeService;
 
-    public PasswordController(RestTemplate restTemplate,
-            KeycloakAdminService keycloakAdminService,
-            RecoveryCodeService recoveryCodeService) {
-        this.restTemplate = restTemplate;
-        this.keycloakAdminService = keycloakAdminService;
-        this.recoveryCodeService = recoveryCodeService;
-    }
-
+    /**
+     * Validate the current password of the authenticated user.
+     *
+     * @param authHeader The authorization header containing the user's JWT token.
+     * @param body       A map containing the current password.
+     * @return A response indicating whether the password is valid or not.
+     */
+    @Operation(
+            summary = "Validate current password",
+            description = """
+                    Validate the current password of the authenticated user.
+                    Requirements:
+                    - The user must provide their current password.
+                    - JWT authentication is mandatory.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password is valid.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Current password is required."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid token or incorrect password."
+            )
+    })
     @PostMapping("/validate")
     public ResponseEntity<?> validateCurrentPassword(
             @RequestHeader("Authorization") String authHeader,
@@ -45,7 +90,7 @@ public class PasswordController {
         try {
             userInfoResponse = restTemplate.exchange(
                     keycloakAdminService.getKeycloakUrl() + "/realms/" + keycloakAdminService.getRealm()
-                    + "/protocol/openid-connect/userinfo",
+                            + "/protocol/openid-connect/userinfo",
                     HttpMethod.GET,
                     new HttpEntity<>(userHeaders),
                     Map.class
@@ -72,7 +117,7 @@ public class PasswordController {
         try {
             restTemplate.postForEntity(
                     keycloakAdminService.getKeycloakUrl() + "/realms/" + keycloakAdminService.getRealm()
-                    + "/protocol/openid-connect/token",
+                            + "/protocol/openid-connect/token",
                     request,
                     String.class
             );
@@ -84,6 +129,37 @@ public class PasswordController {
         }
     }
 
+    /**
+     * Change the password of the authenticated user.
+     *
+     * @param authHeader The authorization header containing the user's JWT token.
+     * @param body       A map containing the new password.
+     * @return A response indicating whether the password was successfully changed.
+     */
+    @Operation(
+            summary = "Change password",
+            description = """
+                    Change the password of the authenticated user.
+                    Requirements:
+                    - The user must provide a new password.
+                    - JWT authentication is mandatory.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password successfully changed.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "New password is required."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid token."
+            )
+    })
     @PostMapping("/change")
     public ResponseEntity<?> changePassword(
             @RequestHeader("Authorization") String authHeader,
@@ -101,7 +177,7 @@ public class PasswordController {
         try {
             userInfoResponse = restTemplate.exchange(
                     keycloakAdminService.getKeycloakUrl() + "/realms/" + keycloakAdminService.getRealm()
-                    + "/protocol/openid-connect/userinfo",
+                            + "/protocol/openid-connect/userinfo",
                     HttpMethod.GET,
                     new HttpEntity<>(userHeaders),
                     Map.class
@@ -126,7 +202,7 @@ public class PasswordController {
         try {
             restTemplate.exchange(
                     keycloakAdminService.getKeycloakUrl() + "/admin/realms/" + keycloakAdminService.getRealm()
-                    + "/users/" + userId + "/reset-password",
+                            + "/users/" + userId + "/reset-password",
                     HttpMethod.PUT,
                     new HttpEntity<>(passwordPayload, passwordHeaders),
                     Void.class
@@ -134,7 +210,7 @@ public class PasswordController {
             // Invalida todas las sesiones del usuario (logout global)
             restTemplate.postForEntity(
                     keycloakAdminService.getKeycloakUrl() + "/admin/realms/" + keycloakAdminService.getRealm()
-                    + "/users/" + userId + "/logout",
+                            + "/users/" + userId + "/logout",
                     new HttpEntity<>(passwordHeaders),
                     Void.class
             );
@@ -150,6 +226,35 @@ public class PasswordController {
         }
     }
 
+    /**
+     * Reset the password using a temporary token.
+     *
+     * @param body A map containing the temporary token and the new password.
+     * @return A response indicating whether the password was successfully reset.
+     */
+    @Operation(
+            summary = "Reset password",
+            description = """
+                    Reset the password using a temporary token.
+                    Requirements:
+                    - The user must provide a valid temporary token and a new password.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password successfully reset.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Incomplete data provided."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired token."
+            )
+    })
     @PostMapping("/reset")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         String tempToken = body.get("tempToken");
@@ -177,7 +282,7 @@ public class PasswordController {
 
                         restTemplate.exchange(
                                 keycloakAdminService.getKeycloakUrl() + "/admin/realms/"
-                                + keycloakAdminService.getRealm() + "/users/" + userId + "/reset-password",
+                                        + keycloakAdminService.getRealm() + "/users/" + userId + "/reset-password",
                                 HttpMethod.PUT,
                                 new HttpEntity<>(payload, headers),
                                 Void.class
