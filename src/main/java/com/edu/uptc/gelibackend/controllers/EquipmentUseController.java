@@ -210,9 +210,9 @@ public class EquipmentUseController {
                     - `useDateTo` (LocalDate): The end date of the usage period (ISO format).
                     - `startUseTimeFrom` (LocalTime): The start time of the usage period (ISO format).
                     - `endUseTimeTo` (LocalTime): The end time of the usage period (ISO format).
-                                
+                    
                     The filter is optional, and you can provide any combination of the above attributes.
-                                
+                    
                     Requirements:
                     - The user must have the 'EQUIPMENT_USE_READ' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER' or 'AUTHORIZED-USER'.
