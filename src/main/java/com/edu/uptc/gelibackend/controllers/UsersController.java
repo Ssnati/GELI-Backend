@@ -210,7 +210,7 @@ public class UsersController {
                     - `creationDateFrom` (LocalDate): The start date for user creation.
                     - `creationDateTo` (LocalDate): The end date for user creation.
                     - `positionId` (Long): The ID of the user's position.
-                                    
+                    ---
                     The filter is optional, and you can provide any combination of the above attributes.
                                     
                     Requirements:
@@ -251,7 +251,6 @@ public class UsersController {
             summary = "Update authorized equipment for a user",
             description = """
                     Update the list of equipment that a specific user is authorized to use.
-                                    
                     Requirements:
                     - The user must have the 'USER_WRITE' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER'.

@@ -230,7 +230,7 @@ public class LaboratoryController {
                     - `equipmentCountTo` (Integer): The maximum number of equipment in the laboratory.
                     
                     The filter is optional, and you can provide any combination of the above attributes.
-                                
+                    ---
                     Requirements:
                     - The user must have the 'LABORATORY_READ' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER' or 'AUTHORIZED-USER'.
