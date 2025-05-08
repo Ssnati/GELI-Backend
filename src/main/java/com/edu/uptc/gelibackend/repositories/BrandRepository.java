@@ -1,4 +1,4 @@
-package com.edu.uptc.gelibackend.services;
+package com.edu.uptc.gelibackend.repositories;
 
 import com.edu.uptc.gelibackend.entities.BrandEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

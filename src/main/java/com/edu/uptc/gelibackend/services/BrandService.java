@@ -3,6 +3,7 @@ package com.edu.uptc.gelibackend.services;
 import com.edu.uptc.gelibackend.dtos.BrandDTO;
 import com.edu.uptc.gelibackend.entities.BrandEntity;
 import com.edu.uptc.gelibackend.mappers.BrandMapper;
+import com.edu.uptc.gelibackend.repositories.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
