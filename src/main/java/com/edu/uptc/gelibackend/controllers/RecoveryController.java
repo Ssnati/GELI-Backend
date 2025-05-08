@@ -2,13 +2,17 @@ package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.services.KeycloakAdminService;
 import com.edu.uptc.gelibackend.services.RecoveryCodeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,8 +21,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Controller for managing password recovery.
+ * Provides endpoints for sending, verifying, and resending recovery codes.
+ *
+ * <p>Requirements:</p>
+ * <ul>
+ *   <li>Valid user credentials must be provided for recovery operations.</li>
+ *   <li>Email configuration must be set up for sending recovery codes.</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/api/recovery")
+@RequiredArgsConstructor
+@Tag(
+        name = "Password Recovery Management",
+        description = """
+                Management of password recovery.
+                This API provides endpoints for sending, verifying, and resending recovery codes.
+                """
+)
 public class RecoveryController {
 
     private final RestTemplate restTemplate;
@@ -26,18 +48,36 @@ public class RecoveryController {
     private final RecoveryCodeService recoveryCodeService;
     private final KeycloakAdminService keycloakAdminService;
 
-    public RecoveryController(
-            RestTemplate restTemplate,
-            JavaMailSender mailSender,
-            RecoveryCodeService recoveryCodeService,
-            KeycloakAdminService keycloakAdminService
-    ) {
-        this.restTemplate = restTemplate;
-        this.mailSender = mailSender;
-        this.recoveryCodeService = recoveryCodeService;
-        this.keycloakAdminService = keycloakAdminService;
-    }
-
+    /**
+     * Send a recovery code to the user's registered email.
+     *
+     * @param body A map containing the username of the user.
+     * @return A response indicating whether the recovery code was successfully sent.
+     */
+    @Operation(
+            summary = "Send recovery code",
+            description = """
+                    Send a recovery code to the user's registered email.
+                    Requirements:
+                    - The user must provide a valid username.
+                    - Email configuration must be set up.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Recovery code successfully sent.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request. Username is required."
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Unexpected error occurred while sending the recovery code."
+            )
+    })
     @PostMapping("/send-code")
     public ResponseEntity<?> sendRecoveryCode(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -57,7 +97,7 @@ public class RecoveryController {
 
             ResponseEntity<List> userResponse = restTemplate.exchange(
                     keycloakAdminService.getKeycloakUrl() + "/admin/realms/" + keycloakAdminService.getRealm()
-                    + "/users?username=" + username,
+                            + "/users?username=" + username,
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     List.class
@@ -109,6 +149,35 @@ public class RecoveryController {
         }
     }
 
+    /**
+     * Verify the recovery code provided by the user.
+     *
+     * @param body A map containing the username and recovery code.
+     * @return A response indicating whether the recovery code is valid.
+     */
+    @Operation(
+            summary = "Verify recovery code",
+            description = """
+                    Verify the recovery code provided by the user.
+                    Requirements:
+                    - The user must provide a valid username and recovery code.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Recovery code successfully verified.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request. Username and recovery code are required."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired recovery code."
+            )
+    })
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyRecoveryCode(@RequestBody Map<String, String> body) {
         String tempToken = body.get("tempToken");
@@ -125,16 +194,46 @@ public class RecoveryController {
                 .filter(rc -> rc.getCode().equals(code))
                 .filter(rc -> rc.getExpiresAt().isAfter(LocalDateTime.now()))
                 .map(rc -> ResponseEntity.ok(Map.of(
-                "valid", true,
-                "message", "Código válido. Puedes continuar.",
-                "tempToken", tempToken
-        )))
+                        "valid", true,
+                        "message", "Código válido. Puedes continuar.",
+                        "tempToken", tempToken
+                )))
                 .orElse(ResponseEntity.badRequest().body(Map.of(
                         "valid", false,
                         "message", "Código inválido o expirado"
                 )));
     }
 
+    /**
+     * Resend a new recovery code to the user's registered email.
+     *
+     * @param body A map containing the username of the user.
+     * @return A response indicating whether the new recovery code was successfully sent.
+     */
+    @Operation(
+            summary = "Resend recovery code",
+            description = """
+                    Resend a new recovery code to the user's registered email.
+                    Requirements:
+                    - The user must provide a valid username.
+                    - Email configuration must be set up.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "New recovery code successfully sent.",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request. Username is required."
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Unexpected error occurred while resending the recovery code."
+            )
+    })
     @PostMapping("/resend-code")
     public ResponseEntity<?> resendRecoveryCode(@RequestBody Map<String, String> body) {
         String tempToken = body.get("tempToken");
@@ -164,7 +263,7 @@ public class RecoveryController {
 
             ResponseEntity<List> userResponse = restTemplate.exchange(
                     keycloakAdminService.getKeycloakUrl() + "/admin/realms/" + keycloakAdminService.getRealm()
-                    + "/users?username=" + username,
+                            + "/users?username=" + username,
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     List.class
