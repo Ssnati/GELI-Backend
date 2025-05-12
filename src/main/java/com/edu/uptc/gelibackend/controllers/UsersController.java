@@ -276,4 +276,25 @@ public class UsersController {
         userService.updateAuthorizedEquipments(id, dto.getEquipmentIds());
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * Check if user exists by email.
+     *
+     * @param email The email of the user to check.
+     * @return True if the user exists, false otherwise.
+     */
+    @Operation(
+            summary = "Check user existence by email",
+            description = "Verify if an email is already associated with a user in the system."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully checked the existence of the user."
+    )
+    @GetMapping("/exists-by-email")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String email) {
+        boolean exists = userService.existsByEmail(email);
+        return ResponseEntity.ok(exists);
+    }
 }
