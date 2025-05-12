@@ -37,7 +37,6 @@ public class UserService {
     private final AuthorizedUserEquipmentsRepo authorizedUserEquipmentsRepo;
     private final JavaMailSender mailSender; // Para enviar correos
 
-
     public List<UserResponseDTO> findAll() {
         List<UserEntity> userEntities = userRepo.findAll(); // asegúrate que esté con @EntityGraph para traer position
         List<UserStatusHistoryEntity> historyEntities = historyRepo.findAll();
@@ -134,6 +133,8 @@ public class UserService {
     }
 
     private String createUserInKeycloakAndAssignRole(UserCreationDTO dto, String password) {
+        System.out.println(dto);
+        System.out.println(password);
         Response kcResp = createUserInKeycloak(dto, password);
         String keycloakUserId = extractUserIdFromResponse(kcResp);
         keyCloakUserService.assignRealmRoleToUser(keycloakUserId, dto.getRole());
@@ -219,11 +220,11 @@ public class UserService {
 
         message.setText(
                 "¡Bienvenido a GELI!\n\n"
-                        + "Tu cuenta ha sido creada exitosamente.\n"
-                        + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
-                        + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
-                        + "Saludos,\n"
-                        + "Equipo GELI"
+                + "Tu cuenta ha sido creada exitosamente.\n"
+                + "Tu contraseña temporal para ingresar es: " + password + "\n\n"
+                + "Por razones de seguridad, cambia tu contraseña en tu primer inicio de sesión.\n\n"
+                + "Saludos,\n"
+                + "Equipo GELI"
         );
 
         mailSender.send(message);
