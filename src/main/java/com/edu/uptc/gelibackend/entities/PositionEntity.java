@@ -16,10 +16,11 @@ public class PositionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "position_id")
     private Long id;
 
     @NotBlank
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "position_name", nullable = false, unique = true, length = 100)
     private String name;
 
     /**

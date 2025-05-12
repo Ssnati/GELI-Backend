@@ -12,22 +12,23 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "status_history")
+@Table(name = "user_status_history")
 public class UserStatusHistoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_status_history_id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "ush_user_id", nullable = false)
     private UserEntity user;
 
     @NotNull
-    @Column(name = "status_to_date", nullable = false)
+    @Column(name = "ush_status_to_date", nullable = false)
     private Boolean statusToDate;
 
     @NotNull
-    @Column(name = "modification_status_date", nullable = false)
+    @Column(name = "ush_modified_at", nullable = false)
     private LocalDate modificationStatusDate;
 }

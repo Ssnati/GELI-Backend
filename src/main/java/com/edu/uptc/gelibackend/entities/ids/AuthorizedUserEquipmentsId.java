@@ -15,10 +15,10 @@ import java.io.Serializable;
 public class AuthorizedUserEquipmentsId implements Serializable {
 
     // Mapeamos el campo userId a la columna user_id
-    @Column(name = "user_id")
+    @Column(name = "aue_user_id")
     private Long userId;
 
     // Mapeamos el campo equipmentId a la columna equipment_id
-    @Column(name = "equipment_id")
+    @Column(name = "aue_equipment_id")
     private Long equipmentId;
 }

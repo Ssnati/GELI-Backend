@@ -18,11 +18,11 @@ public class EquipmentFunctionsEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("equipmentId") // mapea la parte equipmentId del EmbeddedId
-    @JoinColumn(name = "id_equipment")
+    @JoinColumn(name = "ef_equipment_id")
     private EquipmentEntity equipment;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("functionId") // mapea la parte functionId del EmbeddedId
-    @JoinColumn(name = "id_function")
+    @JoinColumn(name = "ef_function_id")
     private FunctionEntity function;
 }

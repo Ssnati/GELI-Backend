@@ -13,16 +13,16 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "`function`")
+@Table(name = "functions")
 public class FunctionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_function")
+    @Column(name = "function_id")
     private Long id;
 
     @NotNull
-    @Column(name = "function_name", nullable = false)
+    @Column(name = "function_name", nullable = false, length = 100)
     private String functionName;
 
     @OneToMany(mappedBy = "function", cascade = CascadeType.ALL)

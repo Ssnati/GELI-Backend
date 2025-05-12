@@ -24,7 +24,7 @@ public class AuthorizedUserEquipmentsEntity {
     // - FK en columna "user_id"
     @MapsId("userId")
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "aue_user_id", nullable = false)
     private UserEntity user;
 
     // Relación ManyToOne con EquipmentEntity:
@@ -32,12 +32,12 @@ public class AuthorizedUserEquipmentsEntity {
     // - FK en columna "equipment_id"
     @MapsId("equipmentId")
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "equipment_id", nullable = false)
+    @JoinColumn(name = "aue_equipment_id", nullable = false)
     private EquipmentEntity equipment;
 
     // Estado de la asignación en el momento (p. ej. "ASIGNADO", "DEVUELTO", etc.)
     @NotNull
-    @Column(name = "actual_status", nullable = false)
+    @Column(name = "aue_actual_status", nullable = false)
     private Boolean actualStatus;
 
     @OneToMany(mappedBy = "authorizedUserEquipments", cascade = CascadeType.ALL, orphanRemoval = true)

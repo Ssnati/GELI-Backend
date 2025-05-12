@@ -16,11 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 public class BrandEntity {
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "brand_id")
     private Long id;
 
     @NotNull
-    @Column(name = "brand_name", nullable = false, unique = true)
+    @Column(name = "brand_name", nullable = false, unique = true, length = 100)
     private String brandName;
 
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -13,38 +13,38 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "equipment")
+@Table(name = "equipments")
 public class EquipmentEntity {
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_equipment")
+    @Column(name = "equipment_id")
     private Long id;
 
     @NotNull
-    @Column(name = "equipment_name", nullable = false)
+    @Column(name = "equipment_name", nullable = false, length = 100)
     private String equipmentName;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "brand_id", nullable = false)
+    @JoinColumn(name = "equipment_brand_id", nullable = false)
     private BrandEntity brand;
 
     @NotNull
-    @Column(name = "inventory_number", nullable = false)
+    @Column(name = "equipment_inventory_number", nullable = false, length = 100)
     private String inventoryNumber;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "laboratory_location_id", nullable = false)
+    @JoinColumn(name = "equipment_laboratory_id", nullable = false)
     private LaboratoryEntity laboratory;
 
     @NotNull
-    @Column(name = "availability", nullable = false)
+    @Column(name = "equipment_availability", nullable = false)
     private Boolean availability;
 
-    @Column(name = "equipment_observations")
+    @Column(name = "equipment_observations", length = 500)
     private String equipmentObservations;
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)

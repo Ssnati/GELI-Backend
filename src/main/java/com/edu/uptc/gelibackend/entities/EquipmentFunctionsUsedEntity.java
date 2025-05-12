@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "equipment_functions_used")
+@Table(name = "equipment_function_usage")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,11 +18,11 @@ public class EquipmentFunctionsUsedEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("equipmentUseId")
-    @JoinColumn(name = "id_equipment_use")
+    @JoinColumn(name = "efu_equipment_usage_id")
     private EquipmentUseEntity equipment;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("functionId")
-    @JoinColumn(name = "id_function")
+    @JoinColumn(name = "efu_function_id")
     private FunctionEntity function;
 }

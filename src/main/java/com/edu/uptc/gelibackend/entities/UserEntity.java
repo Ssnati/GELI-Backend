@@ -17,34 +17,35 @@ public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @NotNull
-    @Column(name = "keycloak_id", unique = true, nullable = false)
+    @Column(name = "keycloak_id", unique = true, nullable = false, length = 100)
     private String keycloakId;
 
     @NotNull
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
     @NotNull
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
     @NotNull
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "user_email", unique = true, nullable = false, length = 100)
     private String email;
 
     @NotNull
-    @Column(name = "identification", unique = true, nullable = false)
+    @Column(name = "user_identification", unique = true, nullable = false, length = 100)
     private String identification;
 
     @NotNull
-    @Column(name = "state", nullable = false)
+    @Column(name = "user_status", nullable = false)
     private Boolean state;
 
     @NotNull
-    @Column(name = "role", nullable = false)
+    @Column(name = "user_role", nullable = false, length = 100)
     private String role;
 
     @NotNull
@@ -55,7 +56,7 @@ public class UserEntity {
      * Many users → one position
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "position_id", nullable = false)
+    @JoinColumn(name = "user_position_id", nullable = false)
     private PositionEntity position;
 
     @OneToMany(

@@ -10,19 +10,20 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "laboratory")
+@Table(name = "laboratories")
 @Builder
 public class LaboratoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "laboratory_id")
     private Long id;
 
     @NotNull
-    @Column(name = "laboratory_name", nullable = false)
+    @Column(name = "laboratory_name", nullable = false, length = 200)
     private String laboratoryName; // Nombre del laboratorio
 
-    @Column(name = "laboratory_description")
+    @Column(name = "laboratory_description", length = 500)
     private String laboratoryDescription; // Descripción del laboratorio
 
     @NotNull
@@ -31,10 +32,10 @@ public class LaboratoryEntity {
     private LocationEntity laboratoryLocation; // Relación con la tabla Location
 
     @NotNull
-    @Column(name = "laboratory_availability", nullable = false)
+    @Column(name = "laboratory_status", nullable = false)
     private Boolean laboratoryAvailability; // Disponibilidad del laboratorio
 
-    @Column(name = "laboratory_observations")
+    @Column(name = "laboratory_observations", length = 500)
     private String laboratoryObservations; // Observaciones del laboratorio
 
     @OneToMany(mappedBy = "laboratory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

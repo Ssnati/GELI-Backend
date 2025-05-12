@@ -13,9 +13,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EquipmentFunctionsUsedId implements Serializable {
-    @Column(name = "id_function")
+    @Column(name = "efu_function_id")
     private Long functionId;
 
-    @Column(name = "id_equipment_use")
+    @Column(name = "efu_equipment_usage_id")
     private Long equipmentUseId;
 }
