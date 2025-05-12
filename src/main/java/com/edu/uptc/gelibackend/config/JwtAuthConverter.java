@@ -47,8 +47,6 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         String principal = jwt.getClaimAsString(principalClaim);
         log.debug("Principal claim: {}, Authorities: {}", principal, authorities);
 
-        System.out.println("Principal claim: " + principal);
-        System.out.println("Authorities: " + authorities);
         return new JwtAuthenticationToken(jwt, authorities, principal);
     }
 
