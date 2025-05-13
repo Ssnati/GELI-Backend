@@ -77,3 +77,6 @@ Controlador para la gestión de laboratorios.
 
 5. **Usuarios y Roles**: 
    - Define los usuarios y roles necesarios en el `Realm` **geli-dev** según los requisitos del proyecto.
+
+#### Documentación completa del código
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Ssnati/GELI-Backend)
