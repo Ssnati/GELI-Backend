@@ -297,4 +297,33 @@ public class UsersController {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(exists);
     }
+
+    /**
+     * Retrieve a user by email.
+     *
+     * @param email The email of the user to retrieve.
+     * @return The {@link UserResponseDTO} if found, or a 404 status if not found.
+     */
+    @Operation(
+            summary = "Retrieve user by email",
+            description = "Fetch a specific user by their email address."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved the user.",
+                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found."
+            )
+    })
+    @GetMapping("/by-email")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<UserResponseDTO> getUserByEmail(@RequestParam String email) {
+        return userService.findUserByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
