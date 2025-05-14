@@ -13,17 +13,17 @@ public class EquipmentUseSpecification extends BaseSpecification<EquipmentUseEnt
         if (!(filter instanceof EquipmentUseFilterDTO equipmentUseFilter)) {
             return null;
         }
-        if (equipmentUseFilter.getIsInUse() != null && equipmentUseFilter.getIsInUse()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("isInUse"), equipmentUseFilter.getIsInUse()));
-        }
         if (equipmentUseFilter.getIsAvailable() != null) {
             spec = spec.and((root, query, cb) ->
             cb.equal(root.get("isAvailable"), equipmentUseFilter.getIsAvailable()));
             }
         if (equipmentUseFilter.getIsInUse() != null) {
             spec = spec.and((root, query, cb) ->
-            cb.equal(root.get("isInUse"), equipmentUseFilter.getIsInUse()));
+                    cb.equal(root.get("isInUse"), equipmentUseFilter.getIsInUse()));
+        }
+        if (equipmentUseFilter.getIsVerified() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("isVerified"), equipmentUseFilter.getIsVerified()));
         }
         if (equipmentUseFilter.getSamplesNumberFrom() > 0) {
             spec = spec.and((root, query, cb) ->
