@@ -231,8 +231,25 @@ public class UserService {
     }
 
     private UserResponseDTO mergeEntityWithRepresentationInDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
-        UserResponseDTO dto = mapper.completeDTOWithRepresentation(new UserResponseDTO(), keycloakUser);
-        return mapper.completeDTOWithEntity(dto, userEntity);
+        UserResponseDTO dto = new UserResponseDTO();
+
+        try {
+            if (keycloakUser != null) {
+                dto = mapper.completeDTOWithRepresentation(dto, keycloakUser);
+            }
+        } catch (Exception e) {
+            // Se ignora la excepción o puedes manejarla como desees
+        }
+
+        try {
+            if (userEntity != null) {
+                dto = mapper.completeDTOWithEntity(dto, userEntity);
+            }
+        } catch (Exception e) {
+            // Se ignora la excepción o puedes manejarla como desees
+        }
+
+        return dto;
     }
 
     private String extractUserIdFromResponse(Response response) {
