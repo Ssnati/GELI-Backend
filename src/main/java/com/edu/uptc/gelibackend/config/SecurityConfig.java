@@ -35,7 +35,8 @@ public class SecurityConfig {
                         "/api/recovery/send-code",
                         "/api/recovery/resend-code",
                         "/api/recovery/verify-code",
-                        "/api/password/reset"
+                        "/api/password/reset",
+                        "/geli/v1"
                 ).permitAll()
                 .anyRequest().authenticated()
                 )
