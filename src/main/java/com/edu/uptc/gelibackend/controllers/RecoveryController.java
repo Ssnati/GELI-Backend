@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -192,7 +193,7 @@ public class RecoveryController {
 
         return recoveryCodeService.findByTempToken(tempToken)
                 .filter(rc -> rc.getCode().equals(code))
-                .filter(rc -> rc.getExpiresAt().isAfter(LocalDateTime.now()))
+                .filter(rc -> rc.getExpiresAt().isAfter(LocalDateTime.now(ZoneId.of("America/Bogota"))))
                 .map(rc -> ResponseEntity.ok(Map.of(
                         "valid", true,
                         "message", "Código válido. Puedes continuar.",
