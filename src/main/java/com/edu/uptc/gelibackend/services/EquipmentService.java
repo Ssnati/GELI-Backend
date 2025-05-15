@@ -178,6 +178,7 @@ public class EquipmentService {
         return false;
     }
 
+    @Transactional(readOnly = true)
     public List<EquipmentResponseDTO> filter(EquipmentFilterDTO filter) {
         Specification<EquipmentEntity> spec = equipmentSpecification.build(filter);
         return equipmentRepo.findAll(spec).stream()
