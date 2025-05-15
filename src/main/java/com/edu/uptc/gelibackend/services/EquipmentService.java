@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
-import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class EquipmentService {
         List<EquipmentAuthorizationHistoryEntity> history = equipmentAuthorizedUsers.stream()
                 .map(equipmentAuthorizedUser -> EquipmentAuthorizationHistoryEntity.builder()
                         .authorizedUserEquipments(equipmentAuthorizedUser)
-                        .modificationAuthorizationStatusDate(LocalDate.now())
+                        .modificationAuthorizationStatusDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate())
                         .authorizationStatusToDate(true)
                         .build())
                 .toList();

@@ -17,7 +17,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -65,7 +66,7 @@ public class EquipmentUseService {
         entity.setUser(findUserById(equipmentStartUseDTO.getUserId()));
         EquipmentEntity equipmentEntity = findEquipmentById(equipmentStartUseDTO.getEquipmentId());
         entity.setEquipment(equipmentEntity);
-        entity.setStartUseTime(LocalDateTime.now());
+        entity.setStartUseTime(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDateTime());
         entity.setIsInUse(true);
 
         return entity;
@@ -110,7 +111,7 @@ public class EquipmentUseService {
 
         List<FunctionEntity> functionEntityList = validateEquipmentUsedFunctions(equipmentEndUseDTO, equipmentUseEntity.getEquipment());
         assignFunctionsToEntity(equipmentUseEntity, functionEntityList);
-        equipmentUseEntity.setEndUseTime(LocalDateTime.now());
+        equipmentUseEntity.setEndUseTime(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDateTime());
         equipmentUseEntity.setIsInUse(false);
 
         equipmentUseRepo.save(equipmentUseEntity);

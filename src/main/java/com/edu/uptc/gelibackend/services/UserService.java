@@ -18,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.ws.rs.core.Response;
 
-import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -145,7 +146,7 @@ public class UserService {
         UserEntity entity = mapper.mapCreationDTOToEntity(dto);
         entity.setKeycloakId(keycloakUserId);
         entity.setState(true);
-        entity.setCreateDateUser(LocalDate.now());
+        entity.setCreateDateUser(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
         entity.setPosition(position);
         List<AuthorizedUserEquipmentsEntity> authorizedEquipments = handleAuthorizedEquipments(entity, dto.getAuthorizedEquipmentsIds());
         entity.setAuthorizedUserEquipments(authorizedEquipments);
@@ -178,13 +179,13 @@ public class UserService {
         UserStatusHistoryEntity hist = new UserStatusHistoryEntity();
         hist.setUser(user);
         hist.setStatusToDate(user.getState());
-        hist.setModificationStatusDate(LocalDate.now());
+        hist.setModificationStatusDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
         historyRepo.save(hist);
     }
 
     private UserResponseDTO buildResponseDTO(UserEntity user) {
         UserResponseDTO responseDto = mapper.completeDTOWithEntity(new UserResponseDTO(), user);
-        responseDto.setModificationStatusDate(LocalDate.now());
+        responseDto.setModificationStatusDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
         return responseDto;
     }
 
@@ -268,7 +269,7 @@ public class UserService {
         UserStatusHistoryEntity historyEntity = new UserStatusHistoryEntity();
         historyEntity.setUser(entity);
         historyEntity.setStatusToDate(entity.getState());
-        historyEntity.setModificationStatusDate(LocalDate.now());
+        historyEntity.setModificationStatusDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
         try {
             return historyRepo.save(historyEntity);
         } catch (Exception e) {
@@ -330,7 +331,7 @@ public class UserService {
                 posHistory.setUser(user);
                 posHistory.setOldPosition(oldPos);
                 posHistory.setNewPosition(newPos);
-                posHistory.setChangeDate(LocalDate.now());
+                posHistory.setChangeDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
                 positionHistoryRepo.save(posHistory);
             }
 
@@ -363,7 +364,7 @@ public class UserService {
         UserStatusHistoryEntity h = new UserStatusHistoryEntity();
         h.setUser(user);
         h.setStatusToDate(dto.getIsActive());
-        h.setModificationStatusDate(LocalDate.now());
+        h.setModificationStatusDate(ZonedDateTime.now(ZoneId.of("America/Bogota")).toLocalDate());
         user.setState(dto.getIsActive());
         return h;
     }
