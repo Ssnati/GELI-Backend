@@ -196,11 +196,25 @@ public class EquipmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<EquipmentResponseDTO> filter(EquipmentFilterDTO filter) {
+    public PageResponse<EquipmentResponseDTO> filter(EquipmentFilterDTO filter, int page, int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must not be less than or equal to zero");
+        }
+        Pageable pageable = PageRequest.of(page, size);
         Specification<EquipmentEntity> spec = equipmentSpecification.build(filter);
-        return equipmentRepo.findAll(spec).stream()
+        Page<EquipmentEntity> pageResult = equipmentRepo.findAll(spec, pageable);
+
+        List<EquipmentResponseDTO> content = pageResult.getContent().stream()
                 .map(mapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        return new PageResponse<>(
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                content
+        );
     }
 
     public boolean existsByInventoryNumber(String inventoryNumber) {

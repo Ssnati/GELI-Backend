@@ -7,7 +7,6 @@ import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Controller for managing laboratory equipment.
@@ -212,15 +209,17 @@ public class EquipmentController {
     }
 
     /**
-     * Filter equipment based on specific criteria.
+     * Filter equipment based on specific criteria with pagination.
      *
      * @param filter The {@link EquipmentFilterDTO} containing the filter criteria.
-     * @return A list of {@link EquipmentResponseDTO} matching the criteria.
+     * @param page The page number to retrieve (zero-based index).
+     * @param size The number of items per page.
+     * @return A paginated list of {@link EquipmentResponseDTO} matching the criteria.
      */
     @Operation(
-            summary = "Filter equipments",
+            summary = "Filter equipments with pagination",
             description = """
-                    Fetch a list of equipments based on specific filter criteria.
+                    Fetch a paginated list of equipments based on specific filter criteria.
                     The filter can include the following attributes:
                     - `equipmentName` (String): The name of the equipment.
                     - `brandId` (Long): The ID of the brand.
@@ -228,6 +227,9 @@ public class EquipmentController {
                     - `availability` (Boolean): The availability status of the equipment.
                     - `functionId` (Long): The ID of the function.
                     The filter is optional, and you can provide any combination of the above attributes.
+                    Pagination parameters:
+                    - `page` (int): The page number to retrieve (zero-based index).
+                    - `size` (int): The number of items per page.
                     Requirements:
                         - The user must have the 'EQUIPMENT_READ' authority.
                         - The user must have the role 'QUALITY-ADMIN-USER'.
@@ -235,20 +237,24 @@ public class EquipmentController {
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Successfully Fetchd the filtered list of equipments.",
+            description = "Successfully fetched the paginated and filtered list of equipments.",
             content = @Content(
-                    array = @ArraySchema(
-                            schema = @Schema(implementation = EquipmentResponseDTO.class)
-                    )
+                    schema = @Schema(
+                            implementation = PageResponse.class,
+                            type = "object"
+                    ),
+                    mediaType = "application/json"
             )
     )
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<List<EquipmentResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter) {
-        List<EquipmentResponseDTO> filteredList = service.filter(filter);
-        if (filteredList.isEmpty()) {
+    public ResponseEntity<PageResponse<EquipmentResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "10") int size) {
+        PageResponse<EquipmentResponseDTO> response = service.filter(filter,page, size);
+        if (response.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(filteredList);
+        return ResponseEntity.ok(response);
     }
 }
