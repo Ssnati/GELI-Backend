@@ -1,28 +1,30 @@
 package com.edu.uptc.gelibackend.services;
 
+import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
+import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
+import com.edu.uptc.gelibackend.dtos.PageResponse;
+import com.edu.uptc.gelibackend.entities.*;
+import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
+import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
+import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
+import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
+import com.edu.uptc.gelibackend.mappers.FunctionMapper;
+import com.edu.uptc.gelibackend.repositories.*;
+import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
-import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
-import com.edu.uptc.gelibackend.entities.*;
-import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
-import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
-import com.edu.uptc.gelibackend.mappers.FunctionMapper;
-import com.edu.uptc.gelibackend.repositories.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-
-import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
-import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
-import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
-import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,10 +40,25 @@ public class EquipmentService {
     private final EquipmentMapper mapper;
     private final FunctionMapper functionMapper;
 
-    public List<EquipmentResponseDTO> findAll() {
-        return equipmentRepo.findAll().stream()
+    public PageResponse<EquipmentResponseDTO> findAll(int page, int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must not be less than or equal to zero");
+        }
+        // Aplicar paginación
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EquipmentEntity> pageResult = equipmentRepo.findAll(pageable);
+
+        List<EquipmentResponseDTO> content = pageResult.getContent().stream()
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                content
+        );
     }
 
     public EquipmentResponseDTO findById(Long id) {

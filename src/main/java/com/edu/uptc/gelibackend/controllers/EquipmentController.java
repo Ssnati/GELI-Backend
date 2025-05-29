@@ -3,6 +3,7 @@ package com.edu.uptc.gelibackend.controllers;
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
+import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,14 +51,14 @@ public class EquipmentController {
     private final EquipmentService service;
 
     /**
-     * Fetch all registered laboratory equipment.
+     * Fetch all registered laboratory equipment with pagination.
      *
-     * @return A list of {@link EquipmentResponseDTO} or a 204 status if no equipment is found.
+     * @return A page of {@link EquipmentResponseDTO} or a 204 status if no equipment is found.
      */
     @Operation(
             summary = "Fetch all equipments",
             description = """
-                    Fetch a list of all registered laboratory equipments.
+                    Fetch a paged list of all registered laboratory equipments.
                     Requirements:
                     - The user must have the 'EQUIPMENT_READ' authority.
                     - The user must have the role 'QUALITY-ADMIN-USER'.
@@ -66,12 +67,12 @@ public class EquipmentController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Successfully Fetchd the list of equipments.",
+                    description = "Successfully Fetched the list of equipments.",
                     content = @Content(
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = EquipmentResponseDTO.class)
-                            )
-                    )
+                            schema = @Schema(
+                                    implementation = PageResponse.class,
+                                    type = "object"),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "204",
@@ -90,9 +91,9 @@ public class EquipmentController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<List<EquipmentResponseDTO>> getAll() {
-        List<EquipmentResponseDTO> list = service.findAll();
-        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+    public ResponseEntity<PageResponse<EquipmentResponseDTO>> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        PageResponse<EquipmentResponseDTO> response = service.findAll(page, size);
+        return response.getContent().isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
     /**
