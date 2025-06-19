@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.mappers;
 
 import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
+import com.edu.uptc.gelibackend.dtos.user.UserFilterResponseDTO;
 import com.edu.uptc.gelibackend.entities.AuthorizedUserEquipmentsEntity;
 import com.edu.uptc.gelibackend.entities.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +63,35 @@ public class UserMapper {
         return dto;
     }
 
+    public UserFilterResponseDTO completeFilterDTOWithEntity(UserFilterResponseDTO dto, UserEntity entity) {
+        dto.setId(entity.getId());
+        dto.setKeycloakId(entity.getKeycloakId());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setIdentification(entity.getIdentification());
+        dto.setEnabledStatus(entity.getState());
+        dto.setRole(entity.getRole());
+        dto.setCreationDate(entity.getCreateDateUser());
+        dto.setPosition(posMapper.toDto(entity.getPosition()));
+        return dto;
+    }
+
     public UserResponseDTO completeDTOWithRepresentation(UserResponseDTO dto, UserRepresentation representation) {
         dto.setKeycloakId(representation.getId());
         dto.setFirstName(representation.getFirstName());
         dto.setLastName(representation.getLastName());
         dto.setEmail(representation.getEmail());
+        dto.setEnabledStatus(representation.isEnabled());
+        dto.setCreationDate(Instant.ofEpochMilli(representation.getCreatedTimestamp())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate());
+        return dto;
+    }
+
+    public UserFilterResponseDTO completeFilterDTOWithRepresentation(UserFilterResponseDTO dto, UserRepresentation representation) {
+        dto.setKeycloakId(representation.getId());
+        dto.setFirstName(representation.getFirstName());
+        dto.setLastName(representation.getLastName());
         dto.setEnabledStatus(representation.isEnabled());
         dto.setCreationDate(Instant.ofEpochMilli(representation.getCreatedTimestamp())
                 .atZone(ZoneId.systemDefault())

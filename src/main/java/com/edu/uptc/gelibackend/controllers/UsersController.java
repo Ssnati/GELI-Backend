@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.*;
+import com.edu.uptc.gelibackend.dtos.user.UserFilterResponseDTO;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -232,12 +233,12 @@ public class UsersController {
     })
     @PostMapping("/filter")
     @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('USER_READ')")
-    public ResponseEntity<PageResponse<UserResponseDTO>> filterUsers(
+    public ResponseEntity<PageResponse<UserFilterResponseDTO>> filterUsers(
             @RequestBody UserFilterDTO filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        PageResponse<UserResponseDTO> response = userService.filter(filter, page, size);
+        PageResponse<UserFilterResponseDTO> response = userService.filter(filter, page, size);
         return response.getContent().isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(response);

@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.*;
+import com.edu.uptc.gelibackend.dtos.user.UserFilterResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
@@ -256,6 +257,28 @@ public class UserService {
         return dto;
     }
 
+    private UserFilterResponseDTO mergeEntityWithRepresentationInFilterDTO(UserEntity userEntity, UserRepresentation keycloakUser) {
+        UserFilterResponseDTO dto = new UserFilterResponseDTO();
+
+        try {
+            if (keycloakUser != null) {
+                dto = mapper.completeFilterDTOWithRepresentation(dto, keycloakUser);
+            }
+        } catch (Exception e) {
+            // Se ignora la excepción o puedes manejarla como desees
+        }
+
+        try {
+            if (userEntity != null) {
+                dto = mapper.completeFilterDTOWithEntity(dto, userEntity);
+            }
+        } catch (Exception e) {
+            // Se ignora la excepción o puedes manejarla como desees
+        }
+
+        return dto;
+    }
+
     private String extractUserIdFromResponse(Response response) {
         int status = response.getStatus();
         if (status != 201) {
@@ -379,7 +402,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<UserResponseDTO> filter(UserFilterDTO filter, int page, int size) {
+    public PageResponse<UserFilterResponseDTO> filter(UserFilterDTO filter, int page, int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must be greater than 0");
         }
@@ -392,22 +415,16 @@ public class UserService {
         Map<String, UserRepresentation> usersMap = keycloakUsers.stream()
                 .collect(Collectors.toMap(UserRepresentation::getId, u -> u));
 
-        List<UserResponseDTO> content = pageResult.getContent().stream()
+        List<UserFilterResponseDTO> content = pageResult.getContent().stream()
                 .map(userEntity -> {
                     UserRepresentation rep = usersMap.get(userEntity.getKeycloakId());
-                    UserResponseDTO dto = mergeEntityWithRepresentationInDTO(userEntity, rep);
+                    UserFilterResponseDTO dto = mergeEntityWithRepresentationInFilterDTO(userEntity, rep);
 
                     if (userEntity.getPosition() != null) {
                         dto.setPosition(new PositionDTO(
                                 userEntity.getPosition().getId(),
                                 userEntity.getPosition().getName()
                         ));
-                    }
-
-                    UserStatusHistoryEntity latest = historyRepo
-                            .findFirstByUserIdOrderByModificationStatusDateDesc(userEntity.getId());
-                    if (latest != null) {
-                        dto.setModificationStatusDate(latest.getModificationStatusDate());
                     }
 
                     return dto;
