@@ -1,9 +1,6 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import com.edu.uptc.gelibackend.dtos.UserAuthorizedEquipmentsUpdateDTO;
-import com.edu.uptc.gelibackend.dtos.UserCreationDTO;
-import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
-import com.edu.uptc.gelibackend.dtos.UserUpdateDTO;
+import com.edu.uptc.gelibackend.dtos.*;
 import com.edu.uptc.gelibackend.filters.UserFilterDTO;
 import com.edu.uptc.gelibackend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -235,10 +232,17 @@ public class UsersController {
     })
     @PostMapping("/filter")
     @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('USER_READ')")
-    public ResponseEntity<List<UserResponseDTO>> filterUsers(@RequestBody UserFilterDTO filter) {
-        List<UserResponseDTO> filtered = userService.filter(filter);
-        return filtered.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(filtered);
+    public ResponseEntity<PageResponse<UserResponseDTO>> filterUsers(
+            @RequestBody UserFilterDTO filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        PageResponse<UserResponseDTO> response = userService.filter(filter, page, size);
+        return response.getContent().isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(response);
     }
+
 
     /**
      * Update the list of authorized equipment for a specific user.

@@ -10,6 +10,8 @@ import com.edu.uptc.gelibackend.specifications.UserSpecification;
 import com.edu.uptc.gelibackend.utils.KeyCloakUtils;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.ws.rs.core.Response;
 
+import org.springframework.data.domain.Pageable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -376,23 +379,24 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> filter(UserFilterDTO filter) {
-        // 1. Aplica la especificación y trae las entidades de usuario
-        Specification<UserEntity> spec = userSpecification.build(filter);
-        List<UserEntity> userEntities = userRepo.findAll(spec);
+    public PageResponse<UserResponseDTO> filter(UserFilterDTO filter, int page, int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must be greater than 0");
+        }
 
-        // 2. Obtén también todos los usuarios de Keycloak para mapear atributos comunes
+        Specification<UserEntity> spec = userSpecification.build(filter);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserEntity> pageResult = userRepo.findAll(spec, pageable);
+
         List<UserRepresentation> keycloakUsers = keyCloakUserService.getAllUsers();
         Map<String, UserRepresentation> usersMap = keycloakUsers.stream()
                 .collect(Collectors.toMap(UserRepresentation::getId, u -> u));
 
-        // 3. Por cada usuario filtrado, arma el DTO y añade la fecha de modificación más reciente
-        return userEntities.stream()
+        List<UserResponseDTO> content = pageResult.getContent().stream()
                 .map(userEntity -> {
                     UserRepresentation rep = usersMap.get(userEntity.getKeycloakId());
                     UserResponseDTO dto = mergeEntityWithRepresentationInDTO(userEntity, rep);
 
-                    // Agregar posición
                     if (userEntity.getPosition() != null) {
                         dto.setPosition(new PositionDTO(
                                 userEntity.getPosition().getId(),
@@ -400,17 +404,25 @@ public class UserService {
                         ));
                     }
 
-                    // Aquí viene el cambio clave:
-                    // Busca el registro de historial más reciente para este user
                     UserStatusHistoryEntity latest = historyRepo
                             .findFirstByUserIdOrderByModificationStatusDateDesc(userEntity.getId());
                     if (latest != null) {
                         dto.setModificationStatusDate(latest.getModificationStatusDate());
                     }
+
                     return dto;
                 })
-                .collect(Collectors.toList());
+                .toList();
+
+        return new PageResponse<>(
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                content
+        );
     }
+
 
     @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findUserByEmail(String email) {
