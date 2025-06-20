@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
+import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.filters.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.entities.LaboratoryEntity;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
@@ -9,6 +10,9 @@ import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
 import com.edu.uptc.gelibackend.specifications.LaboratorySpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -80,11 +84,26 @@ public class LaboratoryService {
         return false;
     }
 
-    public List<LaboratoryDTO> filterLaboratories(LaboratoryFilterDTO filters) {
+    public PageResponse<LaboratoryDTO> filterLaboratories(LaboratoryFilterDTO filters, int page, int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must be greater than 0");
+        }
+
         Specification<LaboratoryEntity> spec = labSpecification.build(filters);
-        return labRepo.findAll(spec).stream()
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LaboratoryEntity> pageResult = labRepo.findAll(spec, pageable);
+
+        List<LaboratoryDTO> content = pageResult.getContent().stream()
                 .map(mapper::mapEntityToDTO)
                 .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                content
+        );
     }
 
     public boolean existsByName(String laboratoryName) {

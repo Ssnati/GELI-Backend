@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.LaboratoryDTO;
+import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.filters.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.services.LaboratoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -253,11 +254,15 @@ public class LaboratoryController {
     })
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('LABORATORY_READ')")
-    public ResponseEntity<List<LaboratoryDTO>> filterLaboratories(@RequestBody LaboratoryFilterDTO filters) {
-        List<LaboratoryDTO> result = service.filterLaboratories(filters);
-        if (result.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(result);
+    public ResponseEntity<PageResponse<LaboratoryDTO>> filterLaboratories(
+            @RequestBody LaboratoryFilterDTO filters,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        PageResponse<LaboratoryDTO> response = service.filterLaboratories(filters, page, size);
+        return response.getContent().isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(response);
     }
+
 }
