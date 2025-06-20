@@ -29,11 +29,33 @@ public class PositionService {
     @Transactional
     public PositionDTO create(PositionDTO dto) {
         // avoid duplicates
-        if (positionRepo.existsByNameIgnoreCase(dto.getName())) {
-            throw new RuntimeException("Position already exists: " + dto.getName());
+        if (positionRepo.existsByNameIgnoreCase(dto.getPositionName())) {
+            throw new RuntimeException("Position already exists: " + dto.getPositionName());
         }
         PositionEntity entity = mapper.toEntity(dto);
         PositionEntity saved = positionRepo.save(entity);
         return mapper.toDto(saved);
     }
+
+    @Transactional
+    public PositionDTO update(Long id, PositionDTO dto) {
+        PositionEntity existing = positionRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Position not found with id: " + id));
+
+        // Check uniqueness ignoring current entity
+        if (positionRepo.existsByNameIgnoreCaseAndIdNot(dto.getPositionName(), id)) {
+            throw new RuntimeException("Another position with name '" + dto.getPositionName() + "' already exists.");
+        }
+
+        existing.setName(dto.getPositionName());
+        PositionEntity saved = positionRepo.save(existing);
+        return mapper.toDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByNameIgnoreCase(String name) {
+        return positionRepo.existsByNameIgnoreCase(name);
+    }
+
+
 }

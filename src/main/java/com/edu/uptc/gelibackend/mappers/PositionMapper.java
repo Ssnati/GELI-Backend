@@ -24,7 +24,7 @@ public class PositionMapper {
         }
         PositionEntity entity = new PositionEntity();
         entity.setId(dto.getId());
-        entity.setName(dto.getName());
+        entity.setName(dto.getPositionName());
         return entity;
     }
 

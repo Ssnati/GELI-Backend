@@ -13,4 +13,7 @@ public interface PositionRepository extends JpaRepository<PositionEntity, Long> 
     boolean existsByNameIgnoreCase(String name);
 
     Optional<PositionEntity> findByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String positionName, Long id);
+
 }

@@ -8,5 +8,5 @@ import lombok.*;
 public class PositionDTO {
 
     private Long id;
-    private String name;
+    private String positionName;
 }

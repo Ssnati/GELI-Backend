@@ -10,6 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "positions")
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PositionEntity {

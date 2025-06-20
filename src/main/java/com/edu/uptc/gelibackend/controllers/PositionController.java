@@ -114,4 +114,44 @@ public class PositionController {
         PositionDTO created = positionService.create(dto);
         return ResponseEntity.status(201).body(created);
     }
+
+    @Operation(
+            summary = "Update an existing position",
+            description = """
+        Update the name of a position.
+        Requirements:
+        - The user must have the 'POSITION_WRITE' authority.
+        - The user must have the role 'QUALITY-ADMIN-USER'.
+        """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully updated the position.",
+                    content = @Content(schema = @Schema(implementation = PositionDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request. The position name is not unique or doesn't exist."
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Position not found."
+            )
+    })
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('POSITION_WRITE')")
+    public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id, @RequestBody PositionDTO dto) {
+        PositionDTO updated = positionService.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('POSITION_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String name) {
+        boolean exists = positionService.existsByNameIgnoreCase(name);
+        return ResponseEntity.ok(exists);
+    }
+
+
 }
