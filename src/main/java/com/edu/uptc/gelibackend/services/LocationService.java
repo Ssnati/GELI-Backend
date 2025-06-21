@@ -1,11 +1,14 @@
 package com.edu.uptc.gelibackend.services;
 
 import com.edu.uptc.gelibackend.dtos.LocationDTO;
+import com.edu.uptc.gelibackend.dtos.PositionDTO;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
+import com.edu.uptc.gelibackend.entities.PositionEntity;
 import com.edu.uptc.gelibackend.mappers.LocationMapper;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,5 +41,25 @@ public class LocationService {
         }
 
         return locationMapper.toDTO(locationRepository.save(entity));
+    }
+
+    @Transactional
+    public LocationDTO update(Long id, LocationDTO dto) {
+        LocationEntity existing = locationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location not found with id: " + id));
+
+        // Check uniqueness ignoring current entity
+        if (locationRepository.existsByLocationNameIgnoreCaseAndIdNot(dto.getLocationName(), id)) {
+            throw new RuntimeException("Another position with name '" + dto.getLocationName() + "' already exists.");
+        }
+
+        existing.setLocationName(dto.getLocationName());
+        LocationEntity saved = locationRepository.save(existing);
+        return locationMapper.toDTO(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByNameIgnoreCase(String locationName) {
+        return locationRepository.existsByLocationNameIgnoreCase(locationName);
     }
 }

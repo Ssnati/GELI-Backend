@@ -1,6 +1,7 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.LocationDTO;
+import com.edu.uptc.gelibackend.dtos.PositionDTO;
 import com.edu.uptc.gelibackend.services.LocationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -147,5 +148,19 @@ public class LocationController {
     public ResponseEntity<LocationDTO> createLocation(@RequestBody LocationDTO dto) {
         LocationDTO created = locationService.create(dto);
         return ResponseEntity.status(201).body(created);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('LOCATION_WRITE')")
+    public ResponseEntity<LocationDTO> updateLocation(@PathVariable Long id, @RequestBody LocationDTO dto) {
+        LocationDTO updated = locationService.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('LOCATION_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String locationName) {
+        boolean exists = locationService.existsByNameIgnoreCase(locationName);
+        return ResponseEntity.ok(exists);
     }
 }

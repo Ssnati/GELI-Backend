@@ -7,4 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LocationRepository extends JpaRepository<LocationEntity, Long> {
 
+    boolean existsByLocationNameIgnoreCase(String locationName);
+    boolean existsByLocationNameIgnoreCaseAndIdNot(String locationName, Long id);
+
 }
