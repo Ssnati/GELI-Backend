@@ -1,6 +1,8 @@
 package com.edu.uptc.gelibackend.controllers;
 
 import com.edu.uptc.gelibackend.dtos.BrandDTO;
+import com.edu.uptc.gelibackend.dtos.LocationDTO;
+import com.edu.uptc.gelibackend.dtos.PositionDTO;
 import com.edu.uptc.gelibackend.services.BrandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -148,5 +150,19 @@ public class BrandController {
     public ResponseEntity<BrandDTO> createBrand(@RequestBody BrandDTO brand) {
         BrandDTO createdBrand = service.createBrand(brand);
         return ResponseEntity.status(201).body(createdBrand);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('BRAND_WRITE')")
+    public ResponseEntity<BrandDTO> updateBrand(@PathVariable Long id, @RequestBody BrandDTO dto) {
+        BrandDTO updated = service.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('BRAND_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String brandName) {
+        boolean exists = service.existsByNameIgnoreCase(brandName);
+        return ResponseEntity.ok(exists);
     }
 }

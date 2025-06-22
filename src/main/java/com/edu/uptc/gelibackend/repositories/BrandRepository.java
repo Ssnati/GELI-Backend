@@ -8,4 +8,7 @@ import java.util.Optional;
 public interface BrandRepository extends JpaRepository<BrandEntity, Long> {
 
     Optional<BrandEntity> findByBrandNameIgnoreCase(String name);
+
+    boolean existsByBrandNameIgnoreCase(String brandName);
+    boolean existsByBrandNameIgnoreCaseAndIdNot(String brandName, Long id);
 }
