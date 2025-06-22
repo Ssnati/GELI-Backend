@@ -1,5 +1,6 @@
 package com.edu.uptc.gelibackend.controllers;
 
+import com.edu.uptc.gelibackend.dtos.BrandDTO;
 import com.edu.uptc.gelibackend.dtos.FunctionDTO;
 import com.edu.uptc.gelibackend.services.FunctionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -165,5 +166,19 @@ public class FunctionController {
     public ResponseEntity<FunctionDTO> createFunction(@RequestBody FunctionDTO function) {
         FunctionDTO createdFunction = service.createFunction(function);
         return ResponseEntity.status(201).body(createdFunction);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('FUNCTION_WRITE')")
+    public ResponseEntity<FunctionDTO> updateFunction(@PathVariable Long id, @RequestBody FunctionDTO dto) {
+        FunctionDTO updated = service.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('QUALITY-ADMIN-USER') and hasAuthority('FUNCTION_READ')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String functionName) {
+        boolean exists = service.existsByNameIgnoreCase(functionName);
+        return ResponseEntity.ok(exists);
     }
 }

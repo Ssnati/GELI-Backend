@@ -1,6 +1,8 @@
 package com.edu.uptc.gelibackend.services;
 
+import com.edu.uptc.gelibackend.dtos.BrandDTO;
 import com.edu.uptc.gelibackend.dtos.FunctionDTO;
+import com.edu.uptc.gelibackend.entities.BrandEntity;
 import com.edu.uptc.gelibackend.entities.FunctionEntity;
 import com.edu.uptc.gelibackend.mappers.FunctionMapper;
 import com.edu.uptc.gelibackend.repositories.FunctionRepository;
@@ -43,5 +45,25 @@ public class FunctionService {
         if (functionRepository.existsByFunctionNameIgnoreCase(functionName)) {
             throw new IllegalArgumentException("Function name already exists: " + functionName);
         }
+    }
+
+    @Transactional
+    public FunctionDTO update(Long id, FunctionDTO dto) {
+        FunctionEntity existing = functionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Function not found with id: " + id));
+
+        // Check uniqueness ignoring current entity
+        if (functionRepository.existsByFunctionNameIgnoreCaseAndIdNot(dto.getFunctionName(), id)) {
+            throw new RuntimeException("Another function with name '" + dto.getFunctionName() + "' already exists.");
+        }
+
+        existing.setFunctionName(dto.getFunctionName());
+        FunctionEntity saved = functionRepository.save(existing);
+        return mapper.toDTO(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByNameIgnoreCase(String functionName) {
+        return functionRepository.existsByFunctionNameIgnoreCase(functionName);
     }
 }

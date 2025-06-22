@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface FunctionRepository extends JpaRepository<FunctionEntity, Long> {
 
     boolean existsByFunctionNameIgnoreCase(String functionName);
+
+    boolean existsByFunctionNameIgnoreCaseAndIdNot(String functionName, Long id);
 }
