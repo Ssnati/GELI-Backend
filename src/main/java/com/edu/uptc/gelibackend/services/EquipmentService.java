@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
@@ -196,7 +197,7 @@ public class EquipmentService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<EquipmentResponseDTO> filter(EquipmentFilterDTO filter, int page, int size) {
+    public PageResponse<EquipmentFilterResponseDTO> filter(EquipmentFilterDTO filter, int page, int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must not be less than or equal to zero");
         }
@@ -204,8 +205,8 @@ public class EquipmentService {
         Specification<EquipmentEntity> spec = equipmentSpecification.build(filter);
         Page<EquipmentEntity> pageResult = equipmentRepo.findAll(spec, pageable);
 
-        List<EquipmentResponseDTO> content = pageResult.getContent().stream()
-                .map(mapper::toResponseDTO)
+        List<EquipmentFilterResponseDTO> content = pageResult.getContent().stream()
+                .map(mapper::toFilterResponseDTO)
                 .toList();
 
         return new PageResponse<>(

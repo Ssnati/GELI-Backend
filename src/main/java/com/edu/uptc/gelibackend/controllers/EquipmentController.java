@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -248,10 +249,10 @@ public class EquipmentController {
     )
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<PageResponse<EquipmentResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter,
-                                                             @RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<EquipmentResponseDTO> response = service.filter(filter,page, size);
+    public ResponseEntity<PageResponse<EquipmentFilterResponseDTO>> filter(@RequestBody EquipmentFilterDTO filter,
+                                                                                       @RequestParam(defaultValue = "0") int page,
+                                                                                       @RequestParam(defaultValue = "10") int size) {
+        PageResponse<EquipmentFilterResponseDTO> response = service.filter(filter,page, size);
         if (response.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
