@@ -144,6 +144,26 @@ public class LaboratoryController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/exists-by-update-name")
+    @PreAuthorize("hasAuthority('LABORATORY_READ')")
+    public ResponseEntity<Boolean> existsByName(
+            @RequestParam String laboratoryName,
+            @RequestParam(required = false) Long excludeId
+    ) {
+        boolean exists;
+
+        if (excludeId != null) {
+            // Excluir el laboratorio con el ID especificado
+            exists = service.existsByNameExcludingId(laboratoryName, excludeId);
+        } else {
+            // Validación normal (caso creación)
+            exists = service.existsByName(laboratoryName);
+        }
+
+        return ResponseEntity.ok(exists);
+    }
+
+
     /**
      * Create a new laboratory.
      *

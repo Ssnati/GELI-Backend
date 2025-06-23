@@ -6,6 +6,7 @@ import com.edu.uptc.gelibackend.entities.BrandEntity;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
 import com.edu.uptc.gelibackend.mappers.BrandMapper;
 import com.edu.uptc.gelibackend.repositories.BrandRepository;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,5 +67,10 @@ public class BrandService {
     @Transactional(readOnly = true)
     public boolean existsByNameIgnoreCase(String brandName) {
         return brandRepository.existsByBrandNameIgnoreCase(brandName);
+    }
+
+    public BrandEntity getById(Long id) {
+        return brandRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + id));
     }
 }

@@ -109,4 +109,9 @@ public class LaboratoryService {
     public boolean existsByName(String laboratoryName) {
         return labRepo.existsByLaboratoryNameIgnoreCase(laboratoryName);
     }
+
+    public boolean existsByNameExcludingId(String laboratoryName, Long excludeId) {
+        return labRepo.existsByLaboratoryNameIgnoreCaseAndIdNot(laboratoryName, excludeId);
+    }
+
 }

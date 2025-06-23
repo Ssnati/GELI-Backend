@@ -143,6 +143,26 @@ public class EquipmentController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/exists-by-update-inventory-number")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<Boolean> existsByInventoryNumber(
+            @RequestParam String inventoryNumber,
+            @RequestParam(required = false) Long excludeId
+    ) {
+        boolean exists;
+
+        if (excludeId != null) {
+            // Excluir el laboratorio con el ID especificado
+            exists = service.existsByInventoryNumberExcludingId(inventoryNumber, excludeId);
+        } else {
+            // Validación normal (caso creación)
+            exists = service.existsByInventoryNumber(inventoryNumber);
+        }
+
+        return ResponseEntity.ok(exists);
+    }
+
+
     /**
      * Check if equipment exists by its name.
      *
@@ -204,7 +224,10 @@ public class EquipmentController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
-    public ResponseEntity<EquipmentResponseDTO> update(@PathVariable Long id, @RequestBody EquipmentUpdateDTO dto) {
+    public ResponseEntity<EquipmentResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody EquipmentUpdateDTO dto
+    ) {
         EquipmentResponseDTO updated = service.update(id, dto);
         return ResponseEntity.ok(updated);
     }

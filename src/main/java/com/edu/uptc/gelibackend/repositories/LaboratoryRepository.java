@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LaboratoryRepository extends JpaRepository<LaboratoryEntity, Long>, JpaSpecificationExecutor<LaboratoryEntity> {
     Boolean existsByLaboratoryNameIgnoreCase(String laboratoryName);
+    Boolean existsByLaboratoryNameIgnoreCaseAndIdNot(String laboratoryName, Long id);
+
 }

@@ -13,6 +13,8 @@ import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
 import com.edu.uptc.gelibackend.mappers.FunctionMapper;
 import com.edu.uptc.gelibackend.repositories.*;
 import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +42,8 @@ public class EquipmentService {
     private final UserRepository userRepo;
     private final EquipmentMapper mapper;
     private final FunctionMapper functionMapper;
+    private final BrandService brandService;
+
 
     public PageResponse<EquipmentResponseDTO> findAll(int page, int size) {
         if (size <= 0) {
@@ -119,18 +123,6 @@ public class EquipmentService {
                 .collect(Collectors.toList());
     }
 
-    private List<EquipmentFunctionsEntity> setFunctionsToEquipment(EquipmentEntity equipment, List<FunctionEntity> functions) {
-        if (functions == null || functions.isEmpty()) {
-            return List.of();
-        }
-
-        List<EquipmentFunctionsEntity> equipmentFunctionsEntityList = functions.stream()
-                .map(function -> new EquipmentFunctionsEntity(new EquipmentFunctionsId(), equipment, function))
-                .toList();
-        equipment.setEquipmentFunctions(equipmentFunctionsEntityList);
-        return equipmentFunctionsEntityList;
-    }
-
     private LaboratoryEntity findLaboratoryById(Long laboratoryId) {
         return laboratoryRepo.findById(laboratoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Laboratory not found"));
@@ -154,32 +146,53 @@ public class EquipmentService {
         }
     }
 
+    @Transactional
     public EquipmentResponseDTO update(Long id, EquipmentUpdateDTO dto) {
-        EquipmentEntity exist = equipmentRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
+        EquipmentEntity existing = equipmentRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Equipo no encontrado con ID: " + id));
 
-        // Se valida el cambio de marca y se asigna si se hizo cambio
-        if (dto.getBrandId() != null && !dto.getBrandId().equals(exist.getBrand().getId())) {
-            exist.setBrand(brandRepo.findById(dto.getBrandId())
-                    .orElseThrow(() -> new IllegalArgumentException("Brand not found")));
+        // Validar inventario solo si cambia
+        if (!existing.getInventoryNumber().equalsIgnoreCase(dto.getInventoryNumber())) {
+            this.validateInventoryNumber(dto.getInventoryNumber());
         }
 
-
-        // Se valida que el laboratorio exista y se asigna si se hizo cambio
-        if (dto.getLaboratoryId() != null && !dto.getLaboratoryId().equals(exist.getLaboratory().getId())) {
-            exist.setLaboratory(laboratoryRepo.findById(dto.getLaboratoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Laboratory not found")));
+        // Validaciones básicas
+        if (dto.getBrand() == null || dto.getBrand().getId() == null) {
+            throw new BadRequestException("El ID de la marca es obligatorio");
         }
 
-        // Se maneja el cambio de estado de disponibilidad en caso de que haya cambiado
-        if (dto.getAvailability() != exist.getAvailability()) {
-            exist.setAvailability(dto.getAvailability());
-            exist.setEquipmentObservations(dto.getEquipmentObservations());
-        }
+        this.validateBrandExistence(dto.getBrand().getId());
 
-        EquipmentEntity updatedEntity = equipmentRepo.save(exist);
-        return mapper.toResponseDTO(updatedEntity);
+        // Actualizar campos simples
+        existing.setEquipmentName(dto.getEquipmentName());
+        existing.setInventoryNumber(dto.getInventoryNumber());
+        existing.setBrand(brandService.getById(dto.getBrand().getId()));
+        existing.setLaboratory(findLaboratoryById(dto.getLaboratoryId()));
+        existing.setAvailability(dto.getAvailability());
+        existing.setEquipmentObservations(dto.getEquipmentObservations());
+
+
+        EquipmentEntity saved = equipmentRepo.save(existing);
+        return mapper.toResponseDTO(saved);
     }
+
+
+    private void setFunctionsToEquipment(EquipmentEntity equipment, List<FunctionEntity> newFunctions) {
+        // Limpiar las funciones actuales
+        equipment.getEquipmentFunctions().clear();
+
+        // Agregar las nuevas
+        for (FunctionEntity function : newFunctions) {
+            EquipmentFunctionsEntity efe = new EquipmentFunctionsEntity();
+            efe.setEquipment(equipment);     // ← relación inversa obligatoria
+            efe.setFunction(function);
+
+            equipment.getEquipmentFunctions().add(efe);
+        }
+    }
+
+
+
 
     private void validateInventoryNumber(String inventoryNumber) {
         if (equipmentRepo.findAll().stream()
@@ -221,6 +234,11 @@ public class EquipmentService {
     public boolean existsByInventoryNumber(String inventoryNumber) {
         return equipmentRepo.existsByInventoryNumberIgnoreCase(inventoryNumber);
     }
+
+    public boolean existsByInventoryNumberExcludingId(String inventoryNumber, Long excludeId) {
+        return equipmentRepo.existsByInventoryNumberIgnoreCaseAndIdNot(inventoryNumber, excludeId);
+    }
+
 
     public boolean existsByName(String equipmentName) {
         return equipmentRepo.existsByEquipmentNameIgnoreCase(equipmentName);
