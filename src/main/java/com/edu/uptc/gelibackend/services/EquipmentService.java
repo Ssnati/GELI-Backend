@@ -171,25 +171,36 @@ public class EquipmentService {
         existing.setAvailability(dto.getAvailability());
         existing.setEquipmentObservations(dto.getEquipmentObservations());
 
+        // ✅ Actualizar funciones asociadas
+        List<FunctionEntity> newFunctions = findFunctionsByIds(dto.getFunctions());
+        this.setFunctionsToEquipment(existing, newFunctions);
+
+        // ✅ (Opcional) también puedes actualizar usuarios autorizados si es parte del update
+        // this.setUsersToEquipment(existing, findUsersByIds(dto.getAuthorizedUsersIds()));
 
         EquipmentEntity saved = equipmentRepo.save(existing);
         return mapper.toResponseDTO(saved);
     }
 
 
-    private void setFunctionsToEquipment(EquipmentEntity equipment, List<FunctionEntity> newFunctions) {
-        // Limpiar las funciones actuales
-        equipment.getEquipmentFunctions().clear();
 
-        // Agregar las nuevas
+    private void setFunctionsToEquipment(EquipmentEntity equipment, List<FunctionEntity> newFunctions) {
+        if (equipment.getEquipmentFunctions() == null) {
+            equipment.setEquipmentFunctions(new ArrayList<>());
+        } else {
+            equipment.getEquipmentFunctions().clear();
+        }
+
         for (FunctionEntity function : newFunctions) {
             EquipmentFunctionsEntity efe = new EquipmentFunctionsEntity();
-            efe.setEquipment(equipment);     // ← relación inversa obligatoria
+            efe.setEquipment(equipment);
             efe.setFunction(function);
+            efe.setId(new EquipmentFunctionsId(equipment.getId(), function.getId()));
 
             equipment.getEquipmentFunctions().add(efe);
         }
     }
+
 
 
 

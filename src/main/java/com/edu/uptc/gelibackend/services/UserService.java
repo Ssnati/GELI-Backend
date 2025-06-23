@@ -93,6 +93,10 @@ public class UserService {
         return userRepo.findByEmail(email) != null;
     }
 
+    public boolean existsByIdentification(String identification) {
+        return userRepo.findByIdentification(identification) != null;
+    }
+
     @Transactional
     public UserResponseDTO createUser(UserCreationDTO dto) {
         validateUniqueEmail(dto);

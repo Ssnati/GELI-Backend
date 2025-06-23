@@ -303,6 +303,13 @@ public class UsersController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/exists-by-identification")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<Boolean> existsByIdentification(@RequestParam String identification) {
+        boolean exists = userService.existsByIdentification(identification);
+        return ResponseEntity.ok(exists);
+    }
+
     /**
      * Retrieve a user by email.
      *

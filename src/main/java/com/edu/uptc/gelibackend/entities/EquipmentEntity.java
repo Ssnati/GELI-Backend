@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -49,9 +50,9 @@ public class EquipmentEntity {
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<EquipmentFunctionsEntity> equipmentFunctions;
+    private List<EquipmentFunctionsEntity> equipmentFunctions = new ArrayList<>();
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments;
+    private List<AuthorizedUserEquipmentsEntity> authorizedUsersEquipments = new ArrayList<>();
 }
