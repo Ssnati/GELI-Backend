@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
@@ -13,6 +14,7 @@ import com.edu.uptc.gelibackend.mappers.EquipmentMapper;
 import com.edu.uptc.gelibackend.mappers.FunctionMapper;
 import com.edu.uptc.gelibackend.repositories.*;
 import com.edu.uptc.gelibackend.specifications.EquipmentSpecification;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,10 @@ public class EquipmentService {
     private final EquipmentMapper mapper;
     private final FunctionMapper functionMapper;
     private final BrandService brandService;
+    private final AuthorizedUserEquipmentsRepository authorizedUserEquipmentsRepository;
+    private final UserService userService;
+
+
 
 
     public PageResponse<EquipmentResponseDTO> findAll(int page, int size) {
@@ -254,4 +260,28 @@ public class EquipmentService {
     public boolean existsByName(String equipmentName) {
         return equipmentRepo.existsByEquipmentNameIgnoreCase(equipmentName);
     }
+
+    public List<EquipmentFilterResponseDTO> getAuthorizedEquipmentsByUserAndLab(String email, Long labId) {
+        Long userId = userService.findUserByEmail(email).get().getId();
+        return authorizedUserEquipmentsRepository
+                .findAuthorizedEquipmentsByUserIdAndLaboratoryId(userId, labId)
+                .stream()
+                .map(mapper::toFilterResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public EquipmentAvailabilityResponseDTO getAvailability(Long equipmentId) {
+        EquipmentEntity equipment = equipmentRepo.findById(equipmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado"));
+
+        boolean isAvailable = equipment.getAvailability();
+        String message = isAvailable
+                ? "Este equipo está disponible para su uso."
+                : (equipment.getEquipmentObservations() != null
+                ? equipment.getEquipmentObservations()
+                : "Este equipo está inactivo, sin observaciones registradas.");
+
+        return new EquipmentAvailabilityResponseDTO(isAvailable, message);
+    }
+
 }

@@ -3,6 +3,7 @@ package com.edu.uptc.gelibackend.mappers;
 import com.edu.uptc.gelibackend.dtos.EquipmentEndUseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
 import com.edu.uptc.gelibackend.dtos.UserResponseDTO;
+import com.edu.uptc.gelibackend.dtos.user.UserFilterResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentUseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,8 @@ public class EquipmentUseMapper {
                 .isInUse(equipmentUseEntity.getIsInUse())
                 .isVerified(equipmentUseEntity.getIsVerified())
                 .isAvailable(equipmentUseEntity.getIsAvailable())
-                .equipment(equipmentMapper.toResponseDTO(equipmentUseEntity.getEquipment()))
-                .user(userMapper.completeDTOWithEntity(new UserResponseDTO(), equipmentUseEntity.getUser()))
+                .equipment(equipmentMapper.toFilterResponseDTO(equipmentUseEntity.getEquipment()))
+                .user(userMapper.completeFilterDTOWithEntity(new UserFilterResponseDTO(), equipmentUseEntity.getUser()))
                 .usedFunctions(functionMapper.equipmentFunctionsUsedToDTOs(equipmentUseEntity.getEquipmentFunctionsUsedList()))
                 .samplesNumber(equipmentUseEntity.getSamplesNumber())
                 .observations(equipmentUseEntity.getObservations())

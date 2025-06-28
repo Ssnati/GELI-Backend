@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
@@ -16,7 +17,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Controller for managing laboratory equipment.
@@ -89,7 +94,7 @@ public class EquipmentController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<PageResponse<EquipmentResponseDTO>> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PageResponse<EquipmentResponseDTO>> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10000") int size) {
         PageResponse<EquipmentResponseDTO> response = service.findAll(page, size);
         return response.getContent().isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
@@ -281,4 +286,23 @@ public class EquipmentController {
         }
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/authorized/by-lab/{labId}")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<List<EquipmentFilterResponseDTO>> getAuthorizedEquipmentsByUserAndLab(
+            Authentication authentication,
+            @PathVariable Long labId
+    ) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String email = jwt.getClaim("email");
+        List<EquipmentFilterResponseDTO> list = service.getAuthorizedEquipmentsByUserAndLab(email, labId);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/{id}/availability")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<EquipmentAvailabilityResponseDTO> getAvailability(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAvailability(id));
+    }
+
 }

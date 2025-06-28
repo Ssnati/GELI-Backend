@@ -6,6 +6,8 @@ import com.edu.uptc.gelibackend.filters.LaboratoryFilterDTO;
 import com.edu.uptc.gelibackend.entities.LaboratoryEntity;
 import com.edu.uptc.gelibackend.entities.LocationEntity;
 import com.edu.uptc.gelibackend.mappers.LaboratoryMapper;
+import com.edu.uptc.gelibackend.repositories.AuthorizedUserEquipmentsRepo;
+import com.edu.uptc.gelibackend.repositories.AuthorizedUserEquipmentsRepository;
 import com.edu.uptc.gelibackend.repositories.LaboratoryRepository;
 import com.edu.uptc.gelibackend.repositories.LocationRepository;
 import com.edu.uptc.gelibackend.specifications.LaboratorySpecification;
@@ -29,6 +31,8 @@ public class LaboratoryService {
     private final LocationRepository locRepo;
     private final LaboratoryMapper mapper;
     private final LaboratorySpecification labSpecification;
+    private final AuthorizedUserEquipmentsRepository authorizedUserEquipmentsRepository;
+    private final UserService userService;
 
     public List<LaboratoryDTO> findAll() {
         return labRepo.findAll().stream()
@@ -113,5 +117,14 @@ public class LaboratoryService {
     public boolean existsByNameExcludingId(String laboratoryName, Long excludeId) {
         return labRepo.existsByLaboratoryNameIgnoreCaseAndIdNot(laboratoryName, excludeId);
     }
+
+    public List<LaboratoryDTO> findAuthorizedByUserId(String email) {
+        Long userId = userService.findUserByEmail(email).get().getId();
+        return authorizedUserEquipmentsRepository.findAuthorizedLaboratoriesByUserId(userId)
+                .stream()
+                .map(mapper::mapEntityToDTO)
+                .collect(Collectors.toList());
+    }
+
 
 }

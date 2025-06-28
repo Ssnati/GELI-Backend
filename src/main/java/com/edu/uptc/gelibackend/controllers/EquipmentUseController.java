@@ -1,8 +1,8 @@
 package com.edu.uptc.gelibackend.controllers;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentEndUseDTO;
-import com.edu.uptc.gelibackend.dtos.EquipmentStartUseDTO;
-import com.edu.uptc.gelibackend.dtos.EquipmentUseResponseDTO;
+import com.edu.uptc.gelibackend.dtos.*;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.use.EquipmentAvailabilityStatusDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentUseFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentUseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -78,8 +81,11 @@ public class EquipmentUseController {
     })
     @PostMapping("/start") //start
     @PreAuthorize("hasAuthority('EQUIPMENT_USE_WRITE')")
-    public ResponseEntity<EquipmentUseResponseDTO> startEquipmentUse(@RequestBody EquipmentStartUseDTO equipmentStartUseDTO) {
-        Optional<EquipmentUseResponseDTO> response = service.startEquipmentUse(equipmentStartUseDTO);
+    public ResponseEntity<EquipmentUseResponseDTO> startEquipmentUse(@RequestBody EquipmentStartUseDTO equipmentStartUseDTO, Authentication authentication) {
+        // Extraer el username del token (preferred_username)
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String username = jwt.getClaim("email");
+        Optional<EquipmentUseResponseDTO> response = service.startEquipmentUse(equipmentStartUseDTO, username);
         return response.map(useDTO -> ResponseEntity.status(201).body(useDTO)).orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
@@ -235,8 +241,23 @@ public class EquipmentUseController {
     })
     @PostMapping("/filter")
     @PreAuthorize("hasAuthority('EQUIPMENT_USE_READ')")
-    public ResponseEntity<List<EquipmentUseResponseDTO>> filter(@RequestBody EquipmentUseFilterDTO filter) {
-        List<EquipmentUseResponseDTO> filteredList = service.filter(filter);
-        return filteredList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(filteredList);
+    public ResponseEntity<PageResponse<EquipmentUseResponseDTO>>filter(@RequestBody EquipmentUseFilterDTO filter, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        PageResponse<EquipmentUseResponseDTO> response = service.filter(filter,page, size);
+        if (response.getContent().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/availability")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<EquipmentAvailabilityStatusDTO> checkAvailability(
+            @RequestParam Long equipmentId,
+            Authentication authentication
+    ) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String email = jwt.getClaim("email");
+        return ResponseEntity.ok(service.getEquipmentAvailabilityStatus(equipmentId, email));
+    }
+
 }

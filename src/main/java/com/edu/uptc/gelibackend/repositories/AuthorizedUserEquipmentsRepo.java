@@ -13,4 +13,6 @@ public interface AuthorizedUserEquipmentsRepo extends JpaRepository<AuthorizedUs
     @Transactional
     @Query("DELETE FROM AuthorizedUserEquipmentsEntity e WHERE e.user.id = :userId")
     void deleteByUserId(Long userId);
+
+
 }

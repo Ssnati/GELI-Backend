@@ -1,5 +1,7 @@
 package com.edu.uptc.gelibackend.dtos;
 
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
+import com.edu.uptc.gelibackend.dtos.user.UserFilterResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +19,8 @@ public class EquipmentUseResponseDTO {
     private Boolean isInUse;
     private Boolean isVerified;
     private Boolean isAvailable;
-    private EquipmentResponseDTO equipment;
-    private UserResponseDTO user;
+    private EquipmentFilterResponseDTO equipment;
+    private UserFilterResponseDTO user;
     private int samplesNumber;
     private List<FunctionDTO> usedFunctions;
     private String observations;

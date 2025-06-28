@@ -447,9 +447,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findUserByEmail(String email) {
-        UserEntity entity = userRepo.findByEmail(email);
+        UserEntity entity = userRepo.findByEmail(email.toUpperCase());
+        if (entity == null) {
+            return Optional.empty();
+        }
         return Optional.of(mapper.completeDTOWithEntity(new UserResponseDTO(), entity));
     }
+
 
     @Transactional
     public void updateAuthorizedEquipments(Long userId, List<Long> equipmentIds) {
