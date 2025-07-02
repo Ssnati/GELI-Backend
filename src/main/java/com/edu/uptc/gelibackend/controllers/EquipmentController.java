@@ -5,6 +5,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentByUserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
@@ -290,13 +291,13 @@ public class EquipmentController {
 
     @GetMapping("/authorized/by-lab/{labId}")
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
-    public ResponseEntity<List<EquipmentFilterResponseDTO>> getAuthorizedEquipmentsByUserAndLab(
+    public ResponseEntity<List<EquipmentByUserResponseDTO>> getAuthorizedEquipmentsByUserAndLab(
             Authentication authentication,
             @PathVariable Long labId
     ) {
         Jwt jwt = (Jwt) authentication.getPrincipal();
         String email = jwt.getClaim("email");
-        List<EquipmentFilterResponseDTO> list = service.getAuthorizedEquipmentsByUserAndLab(email, labId);
+        List<EquipmentByUserResponseDTO> list = service.getAuthorizedEquipmentsByUserAndLab(email, labId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 

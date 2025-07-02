@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,7 +151,7 @@ public class EquipmentUseService {
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must not be less than or equal to zero");
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startUseTime"));
         Specification<EquipmentUseEntity> spec = specification.build(filter);
         Page<EquipmentUseEntity> pageResult = equipmentUseRepo.findAll(spec, pageable);
 

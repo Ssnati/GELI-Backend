@@ -2,6 +2,7 @@ package com.edu.uptc.gelibackend.mappers;
 
 import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentByUserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
@@ -62,6 +63,14 @@ public class EquipmentMapper {
         equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         equipmentResponseDTO.setLaboratory(laboratoryMapper.mapEntityToDTO(equipmentEntity.getLaboratory()));
         equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
+        return equipmentResponseDTO;
+    }
+
+    public EquipmentByUserResponseDTO toByUserResponseDTO(EquipmentEntity equipmentEntity) {
+        EquipmentByUserResponseDTO equipmentResponseDTO = new EquipmentByUserResponseDTO();
+        equipmentResponseDTO.setId(equipmentEntity.getId());
+        equipmentResponseDTO.setEquipmentName(equipmentEntity.getEquipmentName());
+        equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         return equipmentResponseDTO;
     }
 
