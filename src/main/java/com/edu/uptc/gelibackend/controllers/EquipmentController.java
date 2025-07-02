@@ -6,6 +6,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -303,6 +304,13 @@ public class EquipmentController {
     @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
     public ResponseEntity<EquipmentAvailabilityResponseDTO> getAvailability(@PathVariable Long id) {
         return ResponseEntity.ok(service.getAvailability(id));
+    }
+
+    @GetMapping("/{id}/functions")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<EquipmentFunctionsResponseDTO> getFunctionsById(@PathVariable Long id) {
+        EquipmentFunctionsResponseDTO equipment = service.findFunctionsById(id);
+        return equipment != null ? ResponseEntity.ok(equipment) : ResponseEntity.notFound().build();
     }
 
 }

@@ -6,6 +6,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
@@ -75,6 +76,12 @@ public class EquipmentService {
     public EquipmentResponseDTO findById(Long id) {
         return equipmentRepo.findById(id)
                 .map(mapper::toResponseDTO)
+                .orElse(null);
+    }
+
+    public EquipmentFunctionsResponseDTO findFunctionsById(Long id) {
+        return equipmentRepo.findById(id)
+                .map(mapper::toFunctionsResponseDTO)
                 .orElse(null);
     }
 
