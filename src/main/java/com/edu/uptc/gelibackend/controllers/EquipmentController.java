@@ -4,10 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
 import com.edu.uptc.gelibackend.dtos.PageResponse;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentByUserResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.*;
 import com.edu.uptc.gelibackend.filters.EquipmentFilterDTO;
 import com.edu.uptc.gelibackend.services.EquipmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -312,6 +309,13 @@ public class EquipmentController {
     public ResponseEntity<EquipmentFunctionsResponseDTO> getFunctionsById(@PathVariable Long id) {
         EquipmentFunctionsResponseDTO equipment = service.findFunctionsById(id);
         return equipment != null ? ResponseEntity.ok(equipment) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/filters")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public ResponseEntity<PageResponse<EquipmentForFilterResponseDTO>> getAllForFilters(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10000") int size) {
+        PageResponse<EquipmentForFilterResponseDTO> response = service.findAllForFilter(page, size);
+        return response.getContent().isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
 }

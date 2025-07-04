@@ -97,13 +97,24 @@ public class EquipmentUseService {
         List<FunctionEntity> equipmentFunctions = entity.getEquipmentFunctions().stream()
                 .map(EquipmentFunctionsEntity::getFunction)
                 .toList();
+
         List<Long> requestedFunctionsId = equipmentEndUseDTO.getUsedFunctions();
         List<FunctionEntity> functionEntityList = findFunctionById(requestedFunctionsId);
+
         for (FunctionEntity function : functionEntityList) {
-            if (equipmentFunctions.stream().noneMatch(equipmentFunction -> Objects.equals(equipmentFunction.getId(), function.getId()))) {
+            // 🟡 Excepción para "NO APLICA"
+            if ("NO APLICA".equalsIgnoreCase(function.getFunctionName())) {
+                continue; // saltar validación
+            }
+
+            boolean isValidFunction = equipmentFunctions.stream()
+                    .anyMatch(equipmentFunction -> Objects.equals(equipmentFunction.getId(), function.getId()));
+
+            if (!isValidFunction) {
                 throw new IllegalArgumentException("The function " + function.getFunctionName() + " is not available for this equipment");
             }
         }
+
         return functionEntityList;
     }
 

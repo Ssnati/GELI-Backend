@@ -4,6 +4,7 @@ import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
 import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentByUserResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
+import com.edu.uptc.gelibackend.dtos.equipment.EquipmentForFilterResponseDTO;
 import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
 import com.edu.uptc.gelibackend.entities.EquipmentEntity;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,14 @@ public class EquipmentMapper {
         equipmentResponseDTO.setAuthorizedUsers(userMapper.toResponseDTOs(equipmentEntity.getAuthorizedUsersEquipments()));
         equipmentResponseDTO.setAvailability(equipmentEntity.getAvailability());
         equipmentResponseDTO.setEquipmentObservations(equipmentEntity.getEquipmentObservations());
+        return equipmentResponseDTO;
+    }
+
+    public EquipmentForFilterResponseDTO toForFilterResponseDTO(EquipmentEntity equipmentEntity) {
+        EquipmentForFilterResponseDTO equipmentResponseDTO = new EquipmentForFilterResponseDTO();
+        equipmentResponseDTO.setId(equipmentEntity.getId());
+        equipmentResponseDTO.setEquipmentName(equipmentEntity.getEquipmentName());
+        equipmentResponseDTO.setInventoryNumber(equipmentEntity.getInventoryNumber());
         return equipmentResponseDTO;
     }
 

@@ -1,13 +1,7 @@
 package com.edu.uptc.gelibackend.services;
 
-import com.edu.uptc.gelibackend.dtos.EquipmentCreationDTO;
-import com.edu.uptc.gelibackend.dtos.EquipmentResponseDTO;
-import com.edu.uptc.gelibackend.dtos.EquipmentUpdateDTO;
-import com.edu.uptc.gelibackend.dtos.PageResponse;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentAvailabilityResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentByUserResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFilterResponseDTO;
-import com.edu.uptc.gelibackend.dtos.equipment.EquipmentFunctionsResponseDTO;
+import com.edu.uptc.gelibackend.dtos.*;
+import com.edu.uptc.gelibackend.dtos.equipment.*;
 import com.edu.uptc.gelibackend.entities.*;
 import com.edu.uptc.gelibackend.entities.ids.AuthorizedUserEquipmentsId;
 import com.edu.uptc.gelibackend.entities.ids.EquipmentFunctionsId;
@@ -20,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,8 +46,6 @@ public class EquipmentService {
     private final UserService userService;
 
 
-
-
     public PageResponse<EquipmentResponseDTO> findAll(int page, int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must not be less than or equal to zero");
@@ -74,6 +67,27 @@ public class EquipmentService {
         );
     }
 
+    public PageResponse<EquipmentForFilterResponseDTO> findAllForFilter(int page, int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must not be less than or equal to zero");
+        }
+        // Aplicar paginación
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EquipmentEntity> pageResult = equipmentRepo.findAll(pageable);
+
+        List<EquipmentForFilterResponseDTO> content = pageResult.getContent().stream()
+                .map(mapper::toForFilterResponseDTO)
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                content
+        );
+    }
+
     public EquipmentResponseDTO findById(Long id) {
         return equipmentRepo.findById(id)
                 .map(mapper::toResponseDTO)
@@ -81,9 +95,23 @@ public class EquipmentService {
     }
 
     public EquipmentFunctionsResponseDTO findFunctionsById(Long id) {
-        return equipmentRepo.findById(id)
-                .map(mapper::toFunctionsResponseDTO)
-                .orElse(null);
+        return equipmentRepo.findById(id).map(equipmentEntity -> {
+            EquipmentFunctionsResponseDTO dto = mapper.toFunctionsResponseDTO(equipmentEntity);
+
+            List<FunctionDTO> mutableFunctions = new ArrayList<>(dto.getFunctions());
+            dto.setFunctions(mutableFunctions); // asegurar lista mutable
+
+            boolean hasNoAplica = mutableFunctions.stream()
+                    .anyMatch(func -> "NO APLICA".equalsIgnoreCase(func.getFunctionName()));
+
+            if (!hasNoAplica) {
+                functionRepo.findByFunctionName("NO APLICA").ifPresent(noAplicaFunction -> {
+                    mutableFunctions.add(0, functionMapper.toDTO(noAplicaFunction));
+                });
+            }
+
+            return dto;
+        }).orElse(null);
     }
 
     @Transactional
